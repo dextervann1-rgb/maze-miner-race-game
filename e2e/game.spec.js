@@ -1,19 +1,27 @@
-import { test, expect } from '@playwright/test';
-test('loads the game and starts a run', async ({ page }) => {
+import { expect, test } from '@playwright/test';
+
+test('loads the v9 game and starts a run', async ({ page }) => {
   await page.goto('/');
-  await expect(page).toHaveTitle(/Maze Miner Race v5/);
+  await expect(page).toHaveTitle(/Maze Miner Race v9/);
   await expect(page.locator('#board')).toBeVisible();
-  await page.locator('#start').click();
-  await expect(page.locator('#state')).toHaveText('PLAYING');
+  await page.locator('#playBtn').click();
+  await expect(page.locator('#feed')).toContainText('Pos');
+  await expect(page.locator('#serverStatus')).toContainText('Not connected');
 });
-test('pause works', async ({ page }) => {
+
+test('pause and resume work', async ({ page }) => {
   await page.goto('/');
-  await page.locator('#start').click();
-  await page.locator('#pause').click();
-  await expect(page.locator('#state')).toHaveText('PAUSED');
+  await page.locator('#playBtn').click();
+  await page.locator('#pauseBtn').click();
+  await expect(page.locator('#pauseBtn')).toContainText('Resume');
+  await page.locator('#pauseBtn').click();
+  await expect(page.locator('#pauseBtn')).toContainText('Pause');
 });
-test('language selector changes document direction', async ({ page }) => {
+
+test('Arabic switches the document to RTL and translates primary controls', async ({ page }) => {
   await page.goto('/');
   await page.selectOption('#lang', 'ar');
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+  await expect(page.locator('#playBtn')).toContainText('العب');
+  await expect(page.locator('#lScore')).toHaveText('النقاط');
 });
