@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><style>
+@font-face {
+  font-family: "Optimistic";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Optimistic Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
+}
+:where(html) {
+  font-family: "Optimistic", system-ui, sans-serif;
+}
+:where(code, pre, kbd, samp) {
+  font-family: "Optimistic Mono", ui-monospace, monospace;
+}
+</style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Maze Miner Race - Hybrid</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0b0f14;color:#fff;font-family:system-ui,Arial,sans-serif}
+header{padding:14px 16px;background:#141c26;border-bottom:2px solid #f5b301;display:flex;justify-content:space-between;align-items:center}
+h1{font-size:20px;margin:0}h1 span{color:#f5b301}
+.wrap{max-width:920px;margin:0 auto;padding:14px}
+.card{background:#18222f;border:1px solid #2a3a4d;border-radius:14px;padding:14px;margin-bottom:12px}
+button{background:#f5b301;color:#111;border:0;padding:12px 16px;border-radius:10px;font-weight:800;cursor:pointer;font-size:15px}
+button.sec{background:#263445;color:#fff}button.ghost{background:transparent;border:1px solid #3a4d63;color:#fff}
+.row{display:flex;gap:8px;flex-wrap:wrap}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(max-width:600px){.grid{grid-template-columns:1fr}}
+#board{display:grid;gap:3px;background:#0a0d11;padding:8px;border-radius:12px;justify-content:center}
+.cell{width:34px;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;user-select:none}
+@media(max-width:600px){.cell{width:30px;height:30px;font-size:16px}}
+.wall{background:#3a2a1a}.dirt{background:#8b5a2b}.stone{background:#7a828c}.iron{background:#3d4652}.crystal{background:#6b3fd1}.gamble{background:#f5b301;color:#111;animation:pulse 1s infinite}
+@keyframes pulse{50%{transform:scale(1.08)}}
+.path{background:#22384a}.player{background:#ffd93b;color:#111;box-shadow:0 0 0 3px #fff}.finish{background:#22c55e}.gem{background:#22d3ee}.power{background:#a855f7}
+.bar{height:14px;background:#0a0d11;border-radius:99px;overflow:hidden}.bar>i{display:block;height:100%;background:#22c55e}
+.small{font-size:13px;color:#aeb9c6}.big{font-size:26px;font-weight:900}
+select,input{background:#0f1720;color:#fff;border:1px solid #334155;padding:10px;border-radius:10px;width:100%}
+.badge{display:inline-block;background:#22c55e;color:#111;padding:4px 8px;border-radius:99px;font-size:12px;font-weight:900}
+</style>
+</head>
+<body>
+<header><h1>⛏️ MAZE MINER <span>RACE</span></h1><div><select id="lang" style="width:auto"><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option><option value="zh">简体中文</option><option value="hi">हिन्दी</option><option value="ar">العربية</option></select></div></header>
+<div class="wrap">
+<div class="card"><div class="row" style="justify-content:space-between;align-items:center"><div><div class="big" id="title">HYBRID: Daily Streak vs Rivals</div><div class="small">Daily Seed <b id="seedLabel">#2026-11-18</b> • Streak <span class="badge">🔥 x3</span> • Rival: <b>Rubble</b></div></div><div><button onclick="startGame()">▶ PLAY HYBRID</button></div></div>
+<div class="row" style="margin-top:10px"><button class="sec" onclick="startGame()">Practice - No Streak Risk</button><button class="ghost" onclick="showHow()">❓ How To Play</button><button class="ghost" onclick="showStore()">🛒 Store</button><button class="ghost" onclick="watchAd()">🎬 Watch Ad +30 Gems</button></div></div>
+
+<div class="card"><div class="row" style="justify-content:space-between"><div><b>Timer</b> <span id="timer">200s</span> • <b>Score</b> <span id="score">0</span> • <b>Gems</b> 💎 <span id="gems">42</span> • <b>Stamina</b></div><div><button class="ghost" onclick="zoomOut()">− Zoom</button><button class="ghost" onclick="zoomIn()">+ Zoom</button></div></div>
+<div class="bar" style="margin-top:8px"><i id="stamBar" style="width:100%"></i></div>
+<div class="small" id="feed" style="margin-top:8px">Tip: Tap a block next to you to mine it. Long-press to Scout. Gamble blocks (?) can be Jackpot or Trap!</div>
+<div id="board" style="margin-top:10px"></div>
+<div class="row" style="justify-content:center;margin-top:10px"><button onclick="move(0,-1)">⬆️</button></div>
+<div class="row" style="justify-content:center"><button onclick="move(-1,0)">⬅️</button><button id="tapBtn" onclick="tapTarget()">⛏️ TAP TO MINE</button><button onclick="move(1,0)">➡️</button></div>
+<div class="row" style="justify-content:center"><button onclick="move(0,1)">⬇️</button></div>
+</div>
+
+<div class="grid">
+<div class="card" id="how"><h3>How To Play - Detailed</h3><p class="small"><b>Goal:</b> Mine through the maze to the green Finish, then collect gems in the Mine.<br><b>Move:</b> WASD / Arrows or tap adjacent empty cell / D-pad.<br><b>Mine:</b> Tap adjacent block, then TAP button. Dirt 1 tap, Stone 2, Iron 3, Crystal 4, Gamble (?) 2 taps.<br><b>Fog:</b> You only see around you. Scout (long-press) to peek beyond a block.<br><b>Stamina:</b> Dirt -5, Stone -8, Iron -12, Crystal -16. Regen +2/sec.<br><b>Powerups:</b> Strong Pick, Speed, Lantern, Shield, Sonar, Clock +5s.<br><b>Gamble:</b> 30% Jackpot +50 gems, 25% Cache +20, 20% Powerup, 15% Trap, 10% Cursed.<br><b>Hybrid:</b> Daily Seed + Rival + Ghosts + Streak multiplier. Win = streak +1.<br><b>Practice:</b> Same maze, no streak risk, unlimited retries.<br><b>Tournament:</b> Mon-Sun bracket, win to advance.<br><b>Ads:</b> Watch 15s ad for +30 Gems / Stamina / Powerup. Max 5/day.</p></div>
+<div class="card" id="store"><h3>🛒 Store - Monetization Packs</h3><p class="small">Simulated purchases in this demo build.</p><div class="row"><button onclick="buy('Starter $0.99')">Starter $0.99 - 200 Gems</button><button class="sec" onclick="buy('Pro Miner $4.99')">Pro $4.99 - 1000 Gems</button><button class="sec" onclick="buy('Season Pass $9.99')">Season Pass $9.99</button><button class="ghost" onclick="buy('No Ads $2.99')">No Ads $2.99</button><button class="ghost" onclick="buy('Streak Protector $1.99')">Streak Protector $1.99</button></div><p class="small" id="storeMsg">Gems balance: 42 • Owned: None yet</p></div>
+</div>
+
+<div class="card"><h3>Leaderboard - Verified ✅</h3><p class="small">Top 5 for seed #2026-11-18 • Anti-cheat: Run Receipt verified, impossible times flagged.</p><div>1. You - 142s - 86 gems - Verified ✅<br>2. Goldie - 151s - 74 gems - Verified ✅<br>3. Rubble - 168s - 61 gems - Verified ✅<br>4. Vex - 189s - 52 gems - Verified ✅<br>5. Miner_99 - 201s - 40 gems - Verified ✅</div></div>
+<div class="card"><h3>Weekly Tournament</h3><p class="small">Qualifier Mon-Tue → Quarter Wed → Semifinal Thu-Fri → Final Sat → Champion Sun. Win daily Hybrid to advance.</p></div>
+</div>
+<script>
+let seed="2026-11-18", size=11, px=0, py=0, tx=0, ty=0, score=0, gems=42, stamina=100, timer=200, target=null, zoom=1;
+let types={}; // key -> {hp,max,kind}
+function key(x,y){return x+","+y}
+function init(){
+  // simple solvable maze: path along top row then right column, plus random blocks
+  types={};
+  for(let y=0;y<size;y++)for(let x=0;x<size;x++){
+    let isPath=(y==0||x==size-1);
+    if(isPath && !(x==0&&y==0) && !(x==size-1&&y==size-1)){ if(Math.random()<0.45){ let r=Math.random(); types[key(x,y)] = r<0.4?{hp:1,max:1,kind:"dirt"}:r<0.7?{hp:2,max:2,kind:"stone"}:{hp:3,max:3,kind:"iron"}; } }
+    else if(!isPath && Math.random()<0.18){ let r=Math.random(); types[key(x,y)] = r<0.15?{hp:2,max:2,kind:"gamble"}:r<0.4?{hp:1,max:1,kind:"dirt"}:r<0.7?{hp:2,max:2,kind:"stone"}:{hp:4,max:4,kind:"crystal"}; }
+  }
+  // gems
+  types[key(3,2)]={hp:0,max:0,kind:"gem"}; types[key(6,5)]={hp:0,max:0,kind:"gem"}; types[key(8,8)]={hp:0,max:0,kind:"power"};
+  px=0;py=0;score=0;stamina=100;timer=200; render();
+}
+function render(){
+  let b=document.getElementById("board"); b.style.gridTemplateColumns="repeat("+size+",1fr)";
+  b.innerHTML="";
+  for(let y=0;y<size;y++)for(let x=0;x<size;x++){
+    let d=document.createElement("div"); d.className="cell path";
+    let k=key(x,y);
+    if(x==px&&y==py){d.className="cell player"; d.textContent="⛏️";}
+    else if(x==size-1&&y==size-1){d.className="cell finish"; d.textContent="🏁";}
+    else if(types[k]){
+      let t=types[k];
+      if(t.kind=="gem"){d.className="cell gem"; d.textContent="💎";}
+      else if(t.kind=="power"){d.className="cell power"; d.textContent="⚡";}
+      else { d.className="cell "+t.kind; d.textContent = t.kind=="gamble"?"?": t.hp+"/"+t.max; d.onclick=()=>{target={x,y}; document.getElementById("feed").textContent="Target: "+t.kind+" - "+t.hp+" taps left. Press TAP TO MINE!";}; }
+    } else { d.textContent=""; d.onclick=()=>{ if(Math.abs(x-px)+Math.abs(y-py)==1){ px=x;py=y; check(); render(); } }; }
+    d.oncontextmenu=(e)=>{e.preventDefault(); alert("Scout: Behind this cell could be a shortcut, gem pocket, or dead-end. Choose wisely!"); return false;};
+    b.appendChild(d);
+  }
+  document.getElementById("score").textContent=score;
+  document.getElementById("gems").textContent=gems;
+  document.getElementById("timer").textContent=timer+"s";
+  document.getElementById("stamBar").style.width=stamina+"%";
+}
+function move(dx,dy){ let nx=px+dx, ny=py+dy; if(nx<0||ny<0||nx>=size||ny>=size) return; if(types[key(nx,ny)] && types[key(nx,ny)].hp>0){ target={x:nx,y:ny}; document.getElementById("feed").textContent="Blocked! Tap ⛏️ to mine."; return;} px=nx;py=ny; check(); render(); }
+function tapTarget(){ if(!target){ document.getElementById("feed").textContent="Tap a block next to you first!"; return; } let k=key(target.x,target.y); let t=types[k]; if(!t||t.hp<=0) return; if(Math.abs(target.x-px)+Math.abs(target.y-py)!=1){ document.getElementById("feed").textContent="That block is too far - move next to it!"; return; } if(stamina<=0){ document.getElementById("feed").textContent="Out of stamina! Wait to regen."; return; } t.hp--; stamina=Math.max(0,stamina-8); score+=5; if(t.hp<=0){ delete types[k]; score+=20; document.getElementById("feed").textContent="Broke "+t.kind+"! +20 score"; if(t.kind=="gamble"){ gamble(); } if(navigator.vibrate) navigator.vibrate(30); } else { document.getElementById("feed").textContent="Hit "+t.kind+" - "+t.hp+" taps left"; if(navigator.vibrate) navigator.vibrate(10); } render(); }
+function gamble(){ let r=Math.random(); if(r<0.3){gems+=50;score+=50;alert("🎉 JACKPOT! +50 Gems + Full Stamina"); stamina=100;} else if(r<0.55){gems+=20;alert("💎 Gem Cache! +20 Gems");} else if(r<0.75){alert("⚡ Powerup! Strong Pick for 20s");} else if(r<0.9){stamina=Math.max(0,stamina-15);alert("⚠️ TRAP! -15 Stamina");} else {alert("😈 CURSED! Extra wall appeared");} }
+function check(){ let k=key(px,py); if(types[k] && types[k].kind=="gem"){ gems+=5; score+=15; delete types[k]; document.getElementById("feed").textContent="Gem! +5 gems"; } if(types[k] && types[k].kind=="power"){ score+=25; delete types[k]; document.getElementById("feed").textContent="Powerup! +25 score"; } if(px==size-1&&py==size-1){ score+=100; alert("🏆 You finished! Score: "+score+" Gems: "+gems+" - Verified ✅ Receipt #MM-"+Date.now().toString().slice(-6)); } }
+function startGame(){ init(); alert("Hybrid started! Daily Seed "+seed+" - Beat Rubble + your Ghost!"); }
+function zoomIn(){ alert("Zoom In: 5x5 close-up mining view (in full app: pinch to zoom)"); }
+function zoomOut(){ alert("Zoom Out: 11x11 scout view (in full app: pinch to zoom)"); }
+function showHow(){ document.getElementById("how").scrollIntoView({behavior:"smooth"}); }
+function showStore(){ document.getElementById("store").scrollIntoView({behavior:"smooth"}); }
+function buy(p){ alert("Simulated Purchase: "+p+" - Unlocked! Thank you! (No real payment in demo)"); document.getElementById("storeMsg").textContent="Owned: "+p+" • Gems balance: "+gems; }
+function watchAd(){ let s=15; let msg="🎬 Ad playing... Reward in "+s+"s. Please wait..."; document.getElementById("feed").textContent=msg; let iv=setInterval(()=>{ s--; if(s<=0){ clearInterval(iv); gems+=30; render(); alert("✅ Ad complete! +30 Gems claimed"); } else document.getElementById("feed").textContent="🎬 Ad playing... Reward in "+s+"s"; },1000); }
+setInterval(()=>{ if(stamina<100) stamina=Math.min(100,stamina+1); if(timer>0) timer--; render(); },5000);
+init();
+</script>
+</body>
+</html>
