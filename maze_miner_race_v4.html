@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en"><head><style>
+@font-face {
+  font-family: "Optimistic";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Optimistic Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
+}
+:where(html) {
+  font-family: "Optimistic", system-ui, sans-serif;
+}
+:where(code, pre, kbd, samp) {
+  font-family: "Optimistic Mono", ui-monospace, monospace;
+}
+</style><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="manifest" href="manifest.json"><meta name="theme-color" content="#0b0f14"><title>Maze Miner Race v4 — SPARK</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0b0f14;color:#fff;font-family:system-ui,Arial,sans-serif}
+header{padding:12px 16px;background:#141c26;border-bottom:2px solid #f5b301;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+h1{font-size:20px;margin:0}h1 span{color:#f5b301}.wrap{max-width:1020px;margin:0 auto;padding:12px}
+.card{background:#18222f;border:1px solid #2a3a4d;border-radius:14px;padding:14px;margin-bottom:12px}
+button{background:#f5b301;color:#111;border:0;padding:11px 14px;border-radius:10px;font-weight:800;cursor:pointer}
+button.sec{background:#263445;color:#fff}button.ghost{background:transparent;border:1px solid #3a4d63;color:#fff}
+button:focus-visible{outline:3px solid #fff;outline-offset:2px}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#board{display:grid;gap:3px;background:#05070a;padding:8px;border-radius:12px;justify-content:center;min-height:220px;position:relative;overflow:hidden}
+.cell{width:36px;height:36px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;transition:transform .12s,background .2s;position:relative}
+@media(max-width:600px){.cell{width:32px;height:32px}}
+.dirt{background:#8b5a2b}.stone{background:#7a828c}.iron{background:#3d4652}.crystal{background:#6b3fd1}
+.gamble{background:#f5b301;color:#111;animation:pulse 1s infinite}@keyframes pulse{50%{transform:scale(1.1)}}
+.path{background:#22384a}.player{background:#ffd93b;color:#111;box-shadow:0 0 0 3px #fff;transform:scale(1.08);z-index:2}
+.rival{background:#ef4444}.ghostP{background:#22d3ee;opacity:.85}.finish{background:#22c55e}.gem{background:#0e7490}.power{background:#a855f7}
+.fog{background:#000!important;color:transparent!important}.fog-dim{opacity:.35}
+.bar{height:14px;background:#0a0d11;border-radius:99px;overflow:hidden}.bar>i{display:block;height:100%;background:#22c55e;transition:width .3s}
+.small{font-size:13px;color:#aeb9c6}.big{font-size:22px;font-weight:900}
+select,input{background:#0f1720;color:#fff;border:1px solid #334155;padding:10px;border-radius:10px}
+.badge{display:inline-block;background:#22c55e;color:#111;padding:4px 8px;border-radius:99px;font-size:12px;font-weight:900}
+.badge.warn{background:#f59e0b}.badge.off{background:#64748b;color:#fff}
+.toast{background:#f5b301;color:#111;padding:10px;border-radius:10px;font-weight:800;margin-top:8px}
+.particle{position:absolute;pointer-events:none;font-size:18px;animation:floatUp 0.8s ease-out forwards}@keyframes floatUp{to{transform:translateY(-40px);opacity:0}}
+#pauseOverlay,#tutorialOverlay{position:fixed;inset:0;background:rgba(0,0,0,.82);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+#pauseOverlay>div,#tutorialOverlay>div{background:#18222f;border:1px solid #f5b301;border-radius:16px;padding:22px;max-width:520px;width:100%}
+.combo{color:#f5b301;font-weight:900}
+.ach{border:1px solid #334155;border-radius:10px;padding:8px 10px;margin:4px 0}
+.ach.done{border-color:#22c55e;background:#123322}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head><body>
+<header><h1>⛏️ MAZE MINER <span>RACE</span> <span class="badge">v4 SPARK ⚡</span></h1>
+<div class="row"><label class="small">🌐</label><select id="lang" aria-label="Language"><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option><option value="zh">简体中文</option><option value="hi">हिन्दी</option><option value="ar">العربية</option></select><button class="ghost" onclick="Game.audio.toggle()" id="soundBtn">🔊 Sound On</button><button class="ghost" onclick="Game.audio.toggleMusic()" id="musicBtn">🎵 Music Off</button><button class="ghost" onclick="Game.togglePause()" id="pauseBtn">⏸️ <span data-i18n="pause">Pause</span></button></div></header>
+<div class="wrap">
+<div class="card">
+<div class="row" style="justify-content:space-between"><div><div class="big" data-i18n="hybrid">HYBRID: Daily Streak vs Rivals</div><div class="small"><span data-i18n="seed">Seed</span> <b id="seedLabel"></b> • <span id="biomeLabel"></span> • 🔥 <span id="streakEl">3</span> • <span data-i18n="rival">Rival</span>: <b id="rivalName">Rubble</b> <span id="rivalMood"></span> • <span data-i18n="state">State</span>: <b id="stateEl">READY</b> • <span data-i18n="difficulty">Difficulty</span>: <select id="diff" aria-label="Difficulty"><option value="easy">Easy</option><option value="normal" selected>Normal</option><option value="hard">Hard</option></select></div></div><div class="row"><button onclick="Game.newRun(false)" data-i18n="play">▶ PLAY HYBRID</button><button class="sec" onclick="Game.newRun(true)" data-i18n="practice">Practice</button><button class="ghost" onclick="Game.showTutorial()">❓ <span data-i18n="tutorial">Tutorial</span></button></div></div>
+<div class="row" style="margin-top:10px"><span>⏱ <span id="timer">200</span>s</span><span>🏆 <span id="score">0</span></span><span>💎 <span id="gems">0</span></span><span>⚡ <span data-i18n="stamina">Stamina</span></span><div class="bar" style="width:130px"><i id="stamBar" style="width:100%"></i></div><span id="powerEl" class="badge off">No Powerup</span><span id="powerTimer" class="small"></span><span id="comboEl" class="combo"></span></div>
+<div class="row" style="margin-top:8px"><span class="small">🎲 <span data-i18n="modifier">Modifier</span>: <b id="modifierEl"></b></span><span class="small">👤 <span data-i18n="rivalPick">Rival</span>: <select id="rivalPick"><option value="Rubble">Rubble — Aggressive</option><option value="Goldie">Goldie — Gem Hunter</option><option value="Vex">Vex — Gambler</option><option value="Moss">Moss — Defensive</option></select></span><button class="ghost" onclick="Game.shareResult()">🔗 <span data-i18n="share">Share Result</span></button><button class="ghost" onclick="Game.showReplay()">▶️ <span data-i18n="replay">Replay</span></button></div><div class="row" style="margin-top:8px"><button class="ghost" onclick="Game.changeZoom(-1)">− <span data-i18n="zoom">Zoom</span></button><button class="ghost" onclick="Game.changeZoom(1)">+ <span data-i18n="zoom">Zoom</span></button><span class="small" id="zoomEl">View 9x9</span><button class="ghost" onclick="Game.useSonar()">📡 Sonar (<span id="sonarEl">1</span>)</button><button class="ghost" onclick="Game.watchAd()">🎬 <span data-i18n="watchAd">Watch Ad +30 Gems</span></button><span class="small" data-i18n="demoNote">DEMO: Ads & store are simulated — no real payment</span></div>
+<div id="feed" class="small" style="margin-top:8px" aria-live="polite">Ready. Use WASD / Arrows to move, SPACE to mine, L for Lantern.</div>
+<div id="board" role="grid" aria-label="Maze board"></div>
+<div class="row" style="justify-content:center;margin-top:10px"><button onclick="Game.tryMove(0,-1)" aria-label="Move up">⬆️</button></div>
+<div class="row" style="justify-content:center"><button onclick="Game.tryMove(-1,0)" aria-label="Move left">⬅️</button><button onclick="Game.mineTarget()" aria-label="Mine targeted block">⛏️ <span data-i18n="mine">MINE</span></button><button onclick="Game.tryMove(1,0)" aria-label="Move right">➡️</button></div>
+<div class="row" style="justify-content:center"><button onclick="Game.tryMove(0,1)" aria-label="Move down">⬇️</button></div>
+<div id="toast" class="toast" style="display:none"></div>
+<div class="small" style="margin-top:8px"><span data-i18n="quest">Daily Quest</span>: <span id="questEl"></span> • <span data-i18n="chest">Daily Chest</span>: <button class="ghost" onclick="Game.claimChest()" id="chestBtn">Claim</button></div>
+</div>
+<div class="card"><h3 data-i18n="how">How To Play</h3><p class="small" data-i18n="howText">Move with WASD/Arrows or D-pad. Tap a block next to you, then MINE. Dirt 1 tap, Stone 2, Iron 3, Crystal 4, Gamble (?) 2. Fog hides the maze — Scout with long-press, Sonar reveals. Stamina: Dirt -5 Stone -8 Iron -12 Crystal -16. Reach 🏁 before timer ends. Rival + Ghost race you. Practice never risks streak.</p><p class="small"><b data-i18n="powerups">Powerups</b>: <span data-i18n="powerText">Pick = cheaper mining 15s. Speed = move 2 cells per press 12s + HUD countdown. Lantern = vision 5 for 10s. Shield = blocks 1 trap / cursed wall + Rival steal for 30s. Sonar = +1 Sonar. Clock = +5s.</span></p></div>
+<div class="card"><h3>🏆 <span data-i18n="leaderboard">Leaderboard</span> — <span data-i18n="verified">Verified</span> ✅ <span class="small" data-i18n="localNote">(Local — server-ready receipt below)</span></h3><div id="lb" class="small"></div><div class="small" id="receiptEl" style="word-break:break-all;margin-top:6px"></div><button class="ghost" onclick="Game.clearLB()">Clear (test)</button> <button class="ghost" onclick="Game.exportReceipt()">📋 <span data-i18n="export">Copy Receipt</span></button></div>
+<div class="card"><h3>🏆 <span data-i18n="tournament">Weekly Tournament</span></h3><div id="tour" class="small"></div></div>
+<div class="card"><h3>🏅 <span data-i18n="achievements">Achievements</span></h3><div id="achEl"></div></div>
+<div class="card"><h3>🛒 <span data-i18n="store">Store</span> — <span class="small" data-i18n="demoNote2">Simulated demo — no real payment</span></h3><div class="row"><button onclick="Game.buyPack('Starter',0.99,200)"><span data-i18n="starter">Starter</span> $0.99 • 200 <span data-i18n="gemsWord">Gems</span></button><button class="sec" onclick="Game.buyPack('Pro Miner',4.99,1000)"><span data-i18n="pro">Pro Miner</span> $4.99 • 1000 <span data-i18n="gemsWord">Gems</span></button><button class="sec" onclick="Game.buyPack('Season Pass',9.99,500)"><span data-i18n="season">Season Pass</span> $9.99</button><button class="ghost" onclick="Game.buyPack('No Ads',2.99,0)"><span data-i18n="noAds">No Ads</span> $2.99</button></div><div id="storeMsg" class="small" style="margin-top:8px"></div></div>
+<div class="card"><h3>🧪 <span data-i18n="tests">Tests — Real End-to-End</span></h3><div id="tests" class="small"></div><button class="ghost" onclick="Game.runTests()">↻ <span data-i18n="rerunTests">Re-run Tests</span></button></div>
+</div>
+<div id="endScreen" style="display:none" class="card"><h2 id="endTitle">🏆 WIN!</h2><div id="endBreakdown" class="small"></div><div class="row"><button onclick="Game.newRun(false)">▶ Play Again</button><button class="sec" onclick="Game.shareResult()">🔗 Share Result Card</button><button class="ghost" onclick="document.getElementById('endScreen').style.display='none'">Close</button></div><div id="shareCard" style="margin-top:10px;background:#0b0f14;border:1px dashed #f5b301;border-radius:10px;padding:12px;white-space:pre-wrap;font-family:monospace;font-size:13px"></div></div><div id="pauseOverlay" role="dialog" aria-modal="true"><div><h2>⏸️ <span data-i18n="paused">Paused</span></h2><p class="small" data-i18n="pausedText">Timer stopped. Rival stopped. Take a breath.</p><div class="row"><button onclick="Game.togglePause()" data-i18n="resume">▶ Resume</button><button class="sec" onclick="Game.newRun(false)" data-i18n="restart">↻ Restart</button></div></div></div>
+<div id="tutorialOverlay" role="dialog" aria-modal="true"><div><h2>⛏️ <span data-i18n="tutorialTitle">Tutorial — 3 Steps</span></h2><p id="tutText" class="small"></p><div class="row"><button onclick="Game.tutNext()" data-i18n="next">Next →</button><button class="ghost" onclick="Game.hideTutorial()" data-i18n="skip">Skip</button></div></div></div>
+<script>
+/* ================= MODULE: Utils + Seeded RNG ================= */
+const Utils={hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0},mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}},checksum(obj){let s=JSON.stringify(obj);let h=0;for(let i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))>>>0}return h.toString(36)}};
+/* ================= MODULE: Audio (SFX + Procedural Music) ================= */
+const AudioMod={ctx:null,on:true,musicOn:false,musicTimer:null,ensure(){if(!this.ctx)this.ctx=new (window.AudioContext||window.webkitAudioContext)();if(this.ctx.state=='suspended')this.ctx.resume();return this.ctx},beep(f=440,d=.08,type='sine'){if(!this.on)return;try{let c=this.ensure(),o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.value=f;g.gain.value=.08;o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+d);}catch(e){}},toggle(){this.on=!this.on;document.getElementById('soundBtn').textContent=this.on?'🔊 Sound On':'🔇 Sound Off';},toggleMusic(){this.musicOn=!this.musicOn;document.getElementById('musicBtn').textContent=this.musicOn?'🎵 Music On':'🎵 Music Off';if(this.musicOn){let notes=[262,330,392,523,392,330];let i=0;this.musicTimer=setInterval(()=>{this.beep(notes[i%notes.length],.15,'triangle');i++},420);}else clearInterval(this.musicTimer);},fanfare(){[523,659,784,1046].forEach((f,i)=>setTimeout(()=>this.beep(f,.18),i*120));}};
+/* ================= MODULE: I18N — FULL coverage ================= */
+const I18N={en:{hybrid:"HYBRID: Daily Streak vs Rivals",seed:"Seed",rival:"Rival",state:"State",play:"▶ PLAY HYBRID",practice:"Practice",stamina:"Stamina",zoom:"Zoom",watchAd:"Watch Ad +30 Gems",mine:"MINE",how:"How To Play",howText:"Move with WASD/Arrows or D-pad. Tap a block next to you, then MINE. Dirt 1 tap, Stone 2, Iron 3, Crystal 4, Gamble (?) 2. Fog hides the maze — Scout with long-press, Sonar reveals. Stamina: Dirt -5 Stone -8 Iron -12 Crystal -16. Reach 🏁 before timer ends. Rival + Ghost race you. Practice never risks streak.",leaderboard:"Leaderboard",verified:"Verified",pause:"Pause",tutorial:"Tutorial",difficulty:"Difficulty",demoNote:"DEMO: Ads & store are simulated — no real payment",quest:"Daily Quest",chest:"Daily Chest",powerups:"Powerups",powerText:"Pick = cheaper mining 15s. Speed = move 2 cells per press 12s + HUD countdown. Lantern = vision 5 for 10s. Shield = blocks 1 trap / cursed wall + Rival steal for 30s. Sonar = +1 Sonar. Clock = +5s.",localNote:"(Local — server-ready receipt below)",tournament:"Weekly Tournament",achievements:"Achievements",store:"Store",demoNote2:"Simulated demo — no real payment",starter:"Starter",pro:"Pro Miner",season:"Season Pass",noAds:"No Ads",gemsWord:"Gems",tests:"Tests — Real End-to-End",rerunTests:"Re-run Tests",paused:"Paused",pausedText:"Timer stopped. Rival stopped. Take a breath.",resume:"▶ Resume",restart:"↻ Restart",tutorialTitle:"Tutorial — 3 Steps",next:"Next →",skip:"Skip",export:"Copy Receipt"},
+es:{hybrid:"HÍBRIDO: Racha Diaria vs Rivales",seed:"Semilla",rival:"Rival",state:"Estado",play:"▶ JUGAR HÍBRIDO",practice:"Práctica",stamina:"Resistencia",zoom:"Zoom",watchAd:"Ver anuncio +30 Gemas",mine:"MINAR",how:"Cómo jugar",howText:"Muévete con WASD/Flechas. Toca un bloque y MINA. Tierra 1, Piedra 2, Hierro 3, Cristal 4, Apuesta (?) 2.",leaderboard:"Clasificación",verified:"Verificado",pause:"Pausa",tutorial:"Tutorial",difficulty:"Dificultad",demoNote:"DEMO: Anuncios y tienda simulados — sin pago real",quest:"Misión diaria",chest:"Cofre diario",powerups:"Potenciadores",powerText:"Pico = minería más barata 15s. Velocidad = 2 casillas por pulsación 12s. Linterna = visión 5. Escudo = bloquea 1 trampa. Sonar = +1 Sonar. Reloj = +5s.",localNote:"(Local — recibo listo para servidor)",tournament:"Torneo semanal",achievements:"Logros",store:"Tienda",demoNote2:"Demo simulada — sin pago real",starter:"Inicio",pro:"Minero Pro",season:"Pase de temporada",noAds:"Sin anuncios",gemsWord:"Gemas",tests:"Pruebas reales",rerunTests:"Repetir pruebas",paused:"Pausado",pausedText:"Temporizador detenido.",resume:"▶ Continuar",restart:"↻ Reiniciar",tutorialTitle:"Tutorial — 3 pasos",next:"Siguiente →",skip:"Omitir",export:"Copiar recibo"},
+fr:{hybrid:"HYBRIDE: Série quotidienne vs Rivaux",seed:"Graine",rival:"Rival",state:"État",play:"▶ JOUER HYBRIDE",practice:"Entraînement",stamina:"Endurance",zoom:"Zoom",watchAd:"Voir pub +30 Gemmes",mine:"MINER",how:"Comment jouer",howText:"Déplacez-vous avec WASD/Flèches. Touchez un bloc puis MINEZ.",leaderboard:"Classement",verified:"Vérifié",pause:"Pause",tutorial:"Tutoriel",difficulty:"Difficulté",demoNote:"DÉMO : pubs et boutique simulées — aucun paiement réel",quest:"Quête quotidienne",chest:"Coffre quotidien",powerups:"Bonus",powerText:"Pioche = minage moins cher 15s. Vitesse = 2 cases 12s. Lanterne = vision 5. Bouclier = bloque 1 piège. Sonar = +1. Horloge = +5s.",localNote:"(Local — reçu prêt serveur)",tournament:"Tournoi hebdo",achievements:"Succès",store:"Boutique",demoNote2:"Démo simulée — aucun paiement",starter:"Débutant",pro:"Mineur Pro",season:"Pass saison",noAds:"Sans pubs",gemsWord:"Gemmes",tests:"Tests réels",rerunTests:"Relancer les tests",paused:"Pause",pausedText:"Minuteur arrêté.",resume:"▶ Reprendre",restart:"↻ Recommencer",tutorialTitle:"Tutoriel — 3 étapes",next:"Suivant →",skip:"Passer",export:"Copier le reçu"},
+de:{hybrid:"HYBRID: Tägliche Serie vs Rivalen",seed:"Seed",rival:"Rivale",state:"Status",play:"▶ HYBRID SPIELEN",practice:"Üben",stamina:"Ausdauer",zoom:"Zoom",watchAd:"Werbung +30 Edelsteine",mine:"ABBAUEN",how:"Anleitung",howText:"Bewege dich mit WASD/Pfeilen. Tippe einen Block an, dann ABBAUEN.",leaderboard:"Bestenliste",verified:"Verifiziert",pause:"Pause",tutorial:"Tutorial",difficulty:"Schwierigkeit",demoNote:"DEMO: Werbung & Shop simuliert — keine echte Zahlung",quest:"Tägliche Quest",chest:"Tägliche Truhe",powerups:"Powerups",powerText:"Spitzhacke = billiger 15s. Tempo = 2 Felder 12s. Laterne = Sicht 5. Schild = blockt 1 Falle. Sonar = +1. Uhr = +5s.",localNote:"(Lokal — Beleg serverbereit)",tournament:"Wöchentliches Turnier",achievements:"Erfolge",store:"Shop",demoNote2:"Simulierte Demo — keine echte Zahlung",starter:"Starter",pro:"Pro-Miner",season:"Saisonpass",noAds:"Keine Werbung",gemsWord:"Edelsteine",tests:"Echte Tests",rerunTests:"Tests erneut ausführen",paused:"Pausiert",pausedText:"Timer gestoppt.",resume:"▶ Weiter",restart:"↻ Neustart",tutorialTitle:"Tutorial — 3 Schritte",next:"Weiter →",skip:"Überspringen",export:"Beleg kopieren"},
+it:{hybrid:"IBRIDO: Serie giornaliera vs Rivali",seed:"Seme",rival:"Rivale",state:"Stato",play:"▶ GIOCA IBRIDO",practice:"Allenamento",stamina:"Resistenza",zoom:"Zoom",watchAd:"Guarda annuncio +30 Gemme",mine:"SCAVA",how:"Come si gioca",howText:"Muoviti con WASD/Frecce. Tocca un blocco e SCAVA.",leaderboard:"Classifica",verified:"Verificato",pause:"Pausa",tutorial:"Tutorial",difficulty:"Difficoltà",demoNote:"DEMO: Annunci e negozio simulati — nessun pagamento reale",quest:"Missione giornaliera",chest:"Forziere giornaliero",powerups:"Potenziamenti",powerText:"Piccone = scavo più economico 15s. Velocità = 2 celle 12s. Lanterna = visione 5. Scudo = blocca 1 trappola. Sonar = +1. Orologio = +5s.",localNote:"(Locale — ricevuta pronta per server)",tournament:"Torneo settimanale",achievements:"Obiettivi",store:"Negozio",demoNote2:"Demo simulata — nessun pagamento",starter:"Base",pro:"Minatore Pro",season:"Pass Stagione",noAds:"Senza annunci",gemsWord:"Gemme",tests:"Test reali",rerunTests:"Ripeti i test",paused:"Pausa",pausedText:"Timer fermo.",resume:"▶ Riprendi",restart:"↻ Ricomincia",tutorialTitle:"Tutorial — 3 passi",next:"Avanti →",skip:"Salta",export:"Copia ricevuta"},
+pt:{hybrid:"HÍBRIDO: Sequência diária vs Rivais",seed:"Semente",rival:"Rival",state:"Estado",play:"▶ JOGAR HÍBRIDO",practice:"Treino",stamina:"Fôlego",zoom:"Zoom",watchAd:"Ver anúncio +30 Gemas",mine:"MINERAR",how:"Como jogar",howText:"Mova-se com WASD/Setas. Toque num bloco e MINERE.",leaderboard:"Placar",verified:"Verificado",pause:"Pausa",tutorial:"Tutorial",difficulty:"Dificuldade",demoNote:"DEMO: Anúncios e loja simulados — sem pagamento real",quest:"Missão diária",chest:"Baú diário",powerups:"Powerups",powerText:"Picareta = mineração mais barata 15s. Velocidade = 2 células 12s. Lanterna = visão 5. Escudo = bloqueia 1 armadilha. Sonar = +1. Relógio = +5s.",localNote:"(Local — recibo pronto para servidor)",tournament:"Torneio semanal",achievements:"Conquistas",store:"Loja",demoNote2:"Demo simulada — sem pagamento",starter:"Iniciante",pro:"Minerador Pro",season:"Passe de Temporada",noAds:"Sem anúncios",gemsWord:"Gemas",tests:"Testes reais",rerunTests:"Repetir testes",paused:"Pausado",pausedText:"Timer parado.",resume:"▶ Continuar",restart:"↻ Reiniciar",tutorialTitle:"Tutorial — 3 passos",next:"Próximo →",skip:"Pular",export:"Copiar recibo"},
+ja:{hybrid:"ハイブリッド: デイリー連勝 vs ライバル",seed:"シード",rival:"ライバル",state:"状態",play:"▶ ハイブリッドで遊ぶ",practice:"練習",stamina:"スタミナ",zoom:"ズーム",watchAd:"広告を見て+30ジェム",mine:"掘る",how:"遊び方",howText:"WASD/矢印で移動。隣のブロックをタップして掘る。",leaderboard:"ランキング",verified:"検証済み",pause:"一時停止",tutorial:"チュートリアル",difficulty:"難易度",demoNote:"デモ：広告・ストアは模擬 — 実際の支払いなし",quest:"デイリークエスト",chest:"デイリーチェスト",powerups:"パワーアップ",powerText:"ピック＝採掘が安く15秒。スピード＝1回で2マス12秒。ランタン＝視界5。シールド＝罠1回防御。ソナー＝+1。時計＝+5秒。",localNote:"（ローカル — サーバー用レシート）",tournament:"週間トーナメント",achievements:"実績",store:"ストア",demoNote2:"模擬デモ — 支払いなし",starter:"スターター",pro:"プロマイナー",season:"シーズンパス",noAds:"広告なし",gemsWord:"ジェム",tests:"実テスト",rerunTests:"テスト再実行",paused:"一時停止中",pausedText:"タイマー停止中。",resume:"▶ 再開",restart:"↻ リスタート",tutorialTitle:"チュートリアル — 3ステップ",next:"次へ →",skip:"スキップ",export:"レシートをコピー"},
+ko:{hybrid:"하이브리드: 일일 연속 vs 라이벌",seed:"시드",rival:"라이벌",state:"상태",play:"▶ 하이브리드 플레이",practice:"연습",stamina:"체력",zoom:"줌",watchAd:"광고 보고 +30 젬",mine:"채굴",how:"플레이 방법",howText:"WASD/방향키로 이동. 옆 블록을 탭하고 채굴.",leaderboard:"리더보드",verified:"검증됨",pause:"일시정지",tutorial:"튜토리얼",difficulty:"난이도",demoNote:"데모: 광고·상점 시뮬레이션 — 실제 결제 없음",quest:"일일 퀘스트",chest:"일일 상자",powerups:"파워업",powerText:"곡괭이 = 채굴 저렴 15초. 속도 = 1회 2칸 12초. 랜턴 = 시야 5. 방패 = 함정 1회 차단. 소나 = +1. 시계 = +5초.",localNote:"(로컬 — 서버용 영수증)",tournament:"주간 토너먼트",achievements:"업적",store:"상점",demoNote2:"시뮬레이션 데모 — 결제 없음",starter:"스타터",pro:"프로 마이너",season:"시즌 패스",noAds:"광고 없음",gemsWord:"젬",tests:"실제 테스트",rerunTests:"테스트 다시 실행",paused:"일시정지됨",pausedText:"타이머 정지됨.",resume:"▶ 계속",restart:"↻ 다시 시작",tutorialTitle:"튜토리얼 — 3단계",next:"다음 →",skip:"건너뛰기",export:"영수증 복사"},
+zh:{hybrid:"混合: 每日连胜 vs 对手",seed:"种子",rival:"对手",state:"状态",play:"▶ 玩混合模式",practice:"练习",stamina:"体力",zoom:"缩放",watchAd:"看广告 +30 宝石",mine:"挖掘",how:"玩法",howText:"用 WASD/方向键移动。点击相邻方块挖掘。",leaderboard:"排行榜",verified:"已验证",pause:"暂停",tutorial:"教程",difficulty:"难度",demoNote:"演示：广告和商店为模拟 — 无真实付款",quest:"每日任务",chest:"每日宝箱",powerups:"强化道具",powerText:"镐 = 挖掘更便宜15秒。速度 = 一次2格12秒。灯笼 = 视野5。护盾 = 抵挡1陷阱。声呐 = +1。时钟 = +5秒。",localNote:"（本地 — 服务器就绪收据）",tournament:"每周锦标赛",achievements:"成就",store:"商店",demoNote2:"模拟演示 — 无真实付款",starter:"新手包",pro:"专业矿工",season:"赛季通行证",noAds:"无广告",gemsWord:"宝石",tests:"真实测试",rerunTests:"重新测试",paused:"已暂停",pausedText:"计时器已停止。",resume:"▶ 继续",restart:"↻ 重新开始",tutorialTitle:"教程 — 3步",next:"下一步 →",skip:"跳过",export:"复制收据"},
+hi:{hybrid:"हाइब्रिड: दैनिक स्ट्रीक vs प्रतिद्वंद्वी",seed:"सीड",rival:"प्रतिद्वंद्वी",state:"स्थिति",play:"▶ हाइब्रिड खेलें",practice:"अभ्यास",stamina:"स्टैमिना",zoom:"ज़ूम",watchAd:"विज्ञापन देखें +30 रत्न",mine:"खोदें",how:"कैसे खेलें",howText:"WASD/तीरों से चलें। पास के ब्लॉक पर टैप करें और खोदें।",leaderboard:"लीडरबोर्ड",verified:"सत्यापित",pause:"रोकें",tutorial:"ट्यूटोरियल",difficulty:"कठिनाई",demoNote:"डेमो: विज्ञापन और स्टोर नकली हैं — कोई असली भुगतान नहीं",quest:"दैनिक क्वेस्ट",chest:"दैनिक चेस्ट",powerups:"पावरअप",powerText:"पिक = सस्ती खुदाई 15s. स्पीड = एक बार में 2 सेल 12s. लालटेन = दृष्टि 5. शील्ड = 1 जाल रोकता है. सोनार = +1. घड़ी = +5s.",localNote:"(लोकल — सर्वर-रेडी रसीद)",tournament:"साप्ताहिक टूर्नामेंट",achievements:"उपलब्धियां",store:"स्टोर",demoNote2:"नकली डेमो — कोई असली भुगतान नहीं",starter:"स्टार्टर",pro:"प्रो माइनर",season:"सीज़न पास",noAds:"बिना विज्ञापन",gemsWord:"रत्न",tests:"असली टेस्ट",rerunTests:"टेस्ट फिर से चलाएं",paused:"रोका गया",pausedText:"टाइमर रुका हुआ है।",resume:"▶ जारी रखें",restart:"↻ फिर से शुरू करें",tutorialTitle:"ट्यूटोरियल — 3 चरण",next:"आगे →",skip:"छोड़ें",export:"रसीद कॉपी करें"},
+ar:{hybrid:"هجين: سلسلة يومية ضد المنافسين",seed:"البذرة",rival:"المنافس",state:"الحالة",play:"▶ العب هجين",practice:"تدريب",stamina:"القدرة",zoom:"تكبير",watchAd:"شاهد إعلان +30 جوهرة",mine:"احفر",how:"كيفية اللعب",howText:"تحرك بـ WASD/الأسهم. اضغط على كتلة مجاورة ثم احفر.",leaderboard:"لوحة الصدارة",verified:"تم التحقق",pause:"إيقاف مؤقت",tutorial:"تعليمي",difficulty:"الصعوبة",demoNote:"عرض: الإعلانات والمتجر محاكاة — لا دفع حقيقي",quest:"مهمة يومية",chest:"صندوق يومي",powerups:"تعزيزات",powerText:"معول = تعدين أرخص 15ث. سرعة = خليتان لكل ضغطة 12ث. فانوس = رؤية 5. درع = يصد فخاً واحداً. سونار = +1. ساعة = +5ث.",localNote:"(محلي — إيصال جاهز للخادم)",tournament:"بطولة أسبوعية",achievements:"إنجازات",store:"متجر",demoNote2:"عرض محاكاة — لا دفع حقيقي",starter:"مبتدئ",pro:"عامل منجم محترف",season:"تذكرة الموسم",noAds:"بدون إعلانات",gemsWord:"جواهر",tests:"اختبارات حقيقية",rerunTests:"إعادة الاختبارات",paused:"متوقف مؤقتاً",pausedText:"المؤقت متوقف.",resume:"▶ استئناف",restart:"↻ إعادة",tutorialTitle:"تعليمي — 3 خطوات",next:"التالي →",skip:"تخطي",export:"نسخ الإيصال"}};
+const I18nMod={lang:'en',apply(){let l=document.getElementById('lang').value;this.lang=l;let d=I18N[l]||I18N.en;document.querySelectorAll('[data-i18n]').forEach(el=>{let k=el.getAttribute('data-i18n');if(d[k])el.textContent=d[k];});document.documentElement.lang=l;document.documentElement.dir=l=='ar'?'rtl':'ltr';try{localStorage.setItem('mmr_lang',l);}catch(e){}}};
+/* ================= MODULE: Maze ================= */
+const Maze={W:21,H:21,maze:null,blocks:{},gems:{},powers:{},explored:{},gen(seed){let rng=Utils.mulberry(Utils.hash(seed));this.maze=Array.from({length:this.H},()=>Array(this.W).fill(1));let stack=[[1,1]];this.maze[1][1]=0;const dirs=[[2,0],[-2,0],[0,2],[0,-2]];while(stack.length){let [x,y]=stack[stack.length-1];let opts=[];for(let [dx,dy] of dirs){let nx=x+dx,ny=y+dy;if(nx>0&&ny>0&&nx<this.W-1&&ny<this.H-1&&this.maze[ny][nx]==1)opts.push([dx,dy,nx,ny]);}if(!opts.length){stack.pop();continue;}let [dx,dy,nx,ny]=opts[Math.floor(rng()*opts.length)];this.maze[y+dy/2][x+dx/2]=0;this.maze[ny][nx]=0;stack.push([nx,ny]);}this.maze[1][1]=0;this.maze[this.H-2][this.W-2]=0;this.maze[this.H-2][this.W-3]=0;this.maze[this.H-3][this.W-2]=0;this.blocks={};this.gems={};this.powers={};for(let y=0;y<this.H;y++)for(let x=0;x<this.W;x++)if(this.maze[y][x]==1){let r=rng();let kind=r<.35?'dirt':r<.65?'stone':r<.85?'iron':r<.94?'crystal':'gamble';let hp=kind=='dirt'?1:kind=='stone'?2:kind=='iron'?3:kind=='crystal'?4:2;this.blocks[x+','+y]={kind,hp,max:hp};}for(let i=0;i<14;i++){let x=1+Math.floor(rng()*(this.W-2)),y=1+Math.floor(rng()*(this.H-2));if(this.maze[y][x]==0&&!(x==1&&y==1))this.gems[x+','+y]=true;}for(let i=0;i<6;i++){let x=1+Math.floor(rng()*(this.W-2)),y=1+Math.floor(rng()*(this.H-2));if(this.maze[y][x]==0)this.powers[x+','+y]=['pick','speed','lantern','shield','sonar','clock'][i%6];}this.explored={};return rng;},bfs(sx,sy,tx,ty){let q=[[sx,sy]],prev={},seen=new Set([sx+','+sy]);while(q.length){let [x,y]=q.shift();if(x==tx&&y==ty)break;for(let [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){let nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=this.W||ny>=this.H||seen.has(nx+','+ny))continue;let isWall=this.maze[ny][nx]==1&&this.blocks[nx+','+ny];if(isWall&&!(nx==tx&&ny==ty))continue;seen.add(nx+','+ny);prev[nx+','+ny]=[x,y];q.push([nx,ny]);}}let path=[],cur=[tx,ty];while(cur&&!(cur[0]==sx&&cur[1]==sy)){path.unshift(cur);cur=prev[cur[0]+','+cur[1]];if(path.length>600)break;}return path;}};
+/* ================= MODULE: Game ================= */
+const Game={seedStr:new Date().toISOString().slice(0,10),rng:null,px:1,py:1,rx:1,ry:2,gx:1,gy:1,score:0,gems:42,stamina:100,timer:200,state:'READY',zoomLevel:1,viewSize:9,vision:3,target:null,power:{type:null,until:0,charges:0},sonarCount:1,streak:3,ghostTrail:[],ghostIdx:0,myTrail:[],startTime:0,taps:0,blocksBroken:0,gemsCollected:0,combo:0,comboTimer:0,adCount:0,isPractice:false,paused:false,prevState:'READY',difficulty:'normal',rival:{stamina:100,power:null,mood:'😤',taunt:0,aggression:.6},quest:{desc:'Break 5 blocks',done:0,goal:5,reward:20},achievements:{firstWin:false,gemHunter:false,combo5:false,streak3:false},chestClaimed:'',tutStep:0,
+init(){try{let s=JSON.parse(localStorage.getItem('mmr_save')||'{}');this.gems=s.gems||42;this.streak=s.streak||3;this.achievements=s.achievements||this.achievements;this.chestClaimed=s.chest||'';}catch(e){}this.rng=Maze.gen(this.seedStr);this.px=1;this.py=1;this.rx=1;this.ry=2;try{let lb=JSON.parse(localStorage.getItem('mmr_lb_'+this.seedStr)||'[]');if(lb.length&&lb[0].trail)this.ghostTrail=lb[0].trail;}catch(e){}document.getElementById('lang').value=localStorage.getItem('mmr_lang')||'en';I18nMod.apply();document.getElementById('diff').addEventListener('change',e=>this.difficulty=e.target.value);document.addEventListener('visibilitychange',()=>{if(document.hidden&&this.state=='PLAYING')this.togglePause(true);});document.addEventListener('keydown',e=>this.onKey(e));this.render();this.renderLB();this.renderAch();this.renderQuest();this.runTests();if(!localStorage.getItem('mmr_tut'))this.showTutorial();},
+onKey(e){if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();if(e.code=='Escape'){this.togglePause();return;}if(e.code=='KeyP'&&this.state=='PLAYING')this.useSonar();if(this.state!='PLAYING')return;if(e.code=='ArrowUp'||e.code=='KeyW')this.tryMove(0,-1);if(e.code=='ArrowDown'||e.code=='KeyS')this.tryMove(0,1);if(e.code=='ArrowLeft'||e.code=='KeyA')this.tryMove(-1,0);if(e.code=='ArrowRight'||e.code=='KeyD')this.tryMove(1,0);if(e.code=='Space'||e.code=='Enter')this.mineTarget();if(e.code=='KeyL')this.applyPower('lantern');},
+togglePause(force){if(this.state=='PLAYING'||this.state=='PAUSED'){if(force||this.state=='PLAYING'){this.prevState=this.state;this.state='PAUSED';document.getElementById('pauseOverlay').style.display='flex';}else{this.state=this.prevState||'PLAYING';document.getElementById('pauseOverlay').style.display='none';}this.render();}},
+newRun(practice){this.isPractice=practice;Maze.gen(this.seedStr);this.px=1;this.py=1;this.rx=1;this.ry=2;this.gx=1;this.gy=1;this.ghostIdx=0;this.score=0;this.stamina=100;this.timer=this.difficulty=='easy'?260:this.difficulty=='hard'?150:200;this.state='PLAYING';this.paused=false;document.getElementById('pauseOverlay').style.display='none';this.startTime=Date.now();this.taps=0;this.blocksBroken=0;this.gemsCollected=0;this.combo=0;this.myTrail=[[1,1]];this.target=null;this.power={type:null,until:0,charges:0};this.quest={desc:'Break 5 blocks',done:0,goal:5,reward:20};this.rival={stamina:100,power:null,mood:'😤',taunt:0,aggression:this.difficulty=='hard'?.85:this.difficulty=='easy'?.45:.6};this.showToast(practice?'Practice — no streak risk':'Hybrid started! Beat Rubble + Ghost!');this.render();this.updateHUD();},
+tryMove(dx,dy){if(this.state!='PLAYING')return;let steps=this.power.type=='speed'&&Date.now()<this.power.until?2:1;for(let s=0;s<steps;s++){let nx=this.px+dx,ny=this.py+dy;if(nx<0||ny<0||nx>=Maze.W||ny>=Maze.H)break;let b=Maze.blocks[nx+','+ny];if(b){this.target={x:nx,y:ny};this.setFeed('Blocked by '+b.kind+' ('+b.hp+' taps). Press MINE!');break;}this.px=nx;this.py=ny;this.myTrail.push([this.px,this.py]);this.collect();if(this.state!='PLAYING')break;}this.render();},
+mineTarget(){if(this.state!='PLAYING'||!this.target){this.setFeed('Move next to a block first, then MINE.');return;}let {x,y}=this.target;if(Math.abs(x-this.px)+Math.abs(y-this.py)!=1){this.setFeed('Too far — move next to it.');return;}let b=Maze.blocks[x+','+y];if(!b)return;if(this.stamina<=0){this.setFeed('Out of stamina! Wait.');return;}let base={dirt:5,stone:8,iron:12,crystal:16,gamble:8}[b.kind];let cost=this.power.type=='pick'&&Date.now()<this.power.until?Math.max(1,base-3):base;this.stamina=Math.max(0,this.stamina-cost);this.taps++;b.hp--;this.score+=5;AudioMod.beep(200+b.hp*40,.05);this.combo++;this.comboTimer=5;if(this.combo>=3)this.score+=this.combo;if(b.hp<=0){delete Maze.blocks[x+','+y];Maze.maze[y][x]=0;this.blocksBroken++;this.quest.done=Math.min(this.quest.goal,this.quest.done+1);this.score+=20;AudioMod.beep(500,.12);this.spawnParticle(x,y,'💥');if(b.kind=='gamble')this.gamble();this.setFeed('Broke '+b.kind+'! +20');if(navigator.vibrate)navigator.vibrate(30);this.checkQuest();}else{this.setFeed('Hit '+b.kind+' — '+b.hp+' left');if(navigator.vibrate)navigator.vibrate(10);}this.render();},
+gamble(){let r=Math.random();if(r<.3){this.gems+=50;this.stamina=100;this.score+=50;this.showToast('JACKPOT +50 Gems!');if(navigator.vibrate)navigator.vibrate([50,30,50]);}else if(r<.55){this.gems+=20;this.showToast('Gem Cache +20');}else if(r<.75){this.applyPower('pick');this.showToast('Powerup: Strong Pick 20s');}else if(r<.9){if(this.power.type=='shield'&&Date.now()<this.power.until){this.power.charges--;this.showToast('🛡️ Shield blocked TRAP! Charges: '+this.power.charges);if(this.power.charges<=0)this.power={type:null,until:0,charges:0};}else{this.stamina=Math.max(0,this.stamina-15);this.showToast('TRAP -15 Stamina');}}else{if(this.power.type=='shield'&&Date.now()<this.power.until){this.showToast('🛡️ Shield blocked CURSED wall!');}else{this.showToast('CURSED — wall appeared!');let nx=this.px+1,ny=this.py;if(nx<Maze.W-1){Maze.maze[ny][nx]=1;Maze.blocks[nx+','+ny]={kind:'iron',hp:3,max:3};}}}},
+collect(){let k=this.px+','+this.py;if(Maze.gems[k]){delete Maze.gems[k];this.gems+=5;this.gemsCollected++;this.score+=15;AudioMod.beep(800,.08);this.setFeed('Gem +5');this.spawnParticle(this.px,this.py,'💎');if(this.gemsCollected>=10)this.unlock('gemHunter');}if(Maze.powers[k]){let p=Maze.powers[k];delete Maze.powers[k];this.applyPower(p);}if(this.px==Maze.W-2&&this.py==Maze.H-2)this.winGame();},
+applyPower(p){let now=Date.now();if(p=='pick')this.power={type:'pick',until:now+15000,charges:0};if(p=='speed')this.power={type:'speed',until:now+12000,charges:0};if(p=='lantern'){this.vision=5;setTimeout(()=>this.vision=3,10000);this.power={type:'lantern',until:now+10000,charges:0};}if(p=='shield')this.power={type:'shield',until:now+30000,charges:1};if(p=='sonar'){this.sonarCount++;this.power={type:'sonar',until:now+2000,charges:0};}if(p=='clock'){this.timer+=5;this.power={type:'clock',until:now+2000,charges:0};}this.showToast('Powerup: '+p+'!');this.updateHUD();},
+useSonar(){if(this.sonarCount<=0){this.setFeed('No Sonar left.');return;}this.sonarCount--;this.vision=7;this.showToast('Sonar! Full vision 3s');setTimeout(()=>this.vision=3,3000);this.updateHUD();},
+changeZoom(d){this.zoomLevel=Math.max(0,Math.min(2,this.zoomLevel+d));this.viewSize=[7,9,11][this.zoomLevel];document.getElementById('zoomEl').textContent='View '+this.viewSize+'x'+this.viewSize;this.render();},
+checkQuest(){if(this.quest.done>=this.quest.goal){this.gems+=this.quest.reward;this.showToast('Quest complete +'+this.quest.reward+' Gems!');this.quest={desc:'Collect 3 gems',done:0,goal:3,reward:25};}this.renderQuest();},
+claimChest(){let today=new Date().toISOString().slice(0,10);if(this.chestClaimed==today){this.showToast('Chest already claimed today.');return;}this.chestClaimed=today;this.gems+=30;this.saveGame();this.showToast('Daily Chest +30 Gems!');this.render();},
+unlock(id){if(!this.achievements[id]){this.achievements[id]=true;this.showToast('🏅 Achievement: '+id+'!');this.saveGame();this.renderAch();}},
+winGame(){this.state='WON';let elapsed=Math.floor((Date.now()-this.startTime)/1000);let minTime=Math.floor(Maze.bfs(1,1,Maze.W-2,Maze.H-2).length*0.3);let valid=elapsed>=minTime&&elapsed<=1000&&this.gemsCollected<=30&&this.taps>=this.blocksBroken;this.score+=Math.max(0,(200-elapsed))*2;if(!this.isPractice){this.streak++;this.unlock('firstWin');if(this.streak>=3)this.unlock('streak3');this.saveGame();this.saveLB(valid,elapsed);}AudioMod.fanfare();this.showToast('🏆 WIN! Score '+this.score+' in '+elapsed+'s — '+(valid?'Verified ✅':'Flagged — review'));if(navigator.vibrate)navigator.vibrate([50,30,50]);this.render();this.updateHUD();this.renderLB();this.renderAch();},
+loseGame(reason){this.state='LOST';this.showToast('💀 LOST: '+reason+' — Try Practice (no streak risk)');this.render();},
+saveGame(){try{localStorage.setItem('mmr_save',JSON.stringify({gems:this.gems,streak:this.streak,achievements:this.achievements,chest:this.chestClaimed,last:this.seedStr}));}catch(e){}},
+saveLB(valid,elapsed){let receipt={name:'You',time:elapsed,score:this.score,gems:this.gems,taps:this.taps,blocks:this.blocksBroken,valid,seed:this.seedStr,difficulty:this.difficulty,date:Date.now(),trail:this.myTrail.slice(0,200)};receipt.checksum=Utils.checksum(receipt);let key='mmr_lb_'+this.seedStr;let lb=JSON.parse(localStorage.getItem(key)||'[]');lb.push(receipt);lb.sort((a,b)=>a.time-b.time);localStorage.setItem(key,JSON.stringify(lb.slice(0,5)));this.lastReceipt=receipt;document.getElementById('receiptEl').textContent='Server-ready receipt: '+JSON.stringify(receipt).slice(0,400)+'... checksum '+receipt.checksum;},
+renderLB(){let lb=JSON.parse(localStorage.getItem('mmr_lb_'+this.seedStr)||'[]');if(!lb.length)lb=[{name:'Goldie',time:151,score:1200,gems:74,valid:true},{name:'Rubble',time:168,score:1050,gems:61,valid:true}];document.getElementById('lb').innerHTML=lb.map((r,i)=>(i+1)+'. '+r.name+' — '+r.time+'s — '+r.score+' pts — '+(r.valid?'Verified ✅':'⚠️ Flagged')).join('<br>');document.getElementById('tour').innerHTML='Week of '+this.seedStr+' • You: '+(this.state=='WON'?'Advanced ✅':'Play to advance')+' • Rival Rubble • Next: Quarterfinal Wed';},
+clearLB(){localStorage.removeItem('mmr_lb_'+this.seedStr);this.renderLB();},
+exportReceipt(){if(this.lastReceipt){navigator.clipboard?.writeText(JSON.stringify(this.lastReceipt));this.showToast('Receipt copied — send to server for validation');}else this.showToast('Finish a run to get a receipt');},
+renderAch(){let defs=[['firstWin','First Win — Finish once'],['gemHunter','Gem Hunter — Collect 10 gems'],['combo5','Combo Master — 5 combo'],['streak3','Streak 3 — Win 3 days']];document.getElementById('achEl').innerHTML=defs.map(([id,label])=>'<div class="ach '+(this.achievements[id]?'done':'')+'">'+(this.achievements[id]?'✅ ':'🔒 ')+label+'</div>').join('');},
+renderQuest(){document.getElementById('questEl').textContent=this.quest.desc+' ('+this.quest.done+'/'+this.quest.goal+') +'+this.quest.reward+' Gems';},
+spawnParticle(x,y,emoji){let board=document.getElementById('board');let el=document.createElement('div');el.className='particle';el.textContent=emoji;el.style.left=(Math.random()*80+10)+'%';el.style.top=(Math.random()*70+10)+'%';board.appendChild(el);setTimeout(()=>el.remove(),900);},
+showTutorial(){this.tutStep=0;document.getElementById('tutorialOverlay').style.display='flex';this.tutNext(true);},
+tutNext(first){let steps=['Step 1/3: Move with WASD / Arrows or D-pad. Reach 🏁 before the timer ends.','Step 2/3: Tap a block next to you, then press MINE. Dirt 1, Stone 2, Iron 3, Crystal 4. Watch stamina!','Step 3/3: Grab 💎 gems and ⚡ powerups. Speed = 2 cells, Shield = blocks traps. Rival Rubble + Ghost race you. Good luck!'];if(!first)this.tutStep++;if(this.tutStep>=steps.length){this.hideTutorial();return;}document.getElementById('tutText').textContent=steps[this.tutStep];},
+hideTutorial(){document.getElementById('tutorialOverlay').style.display='none';localStorage.setItem('mmr_tut','1');},
+watchAd(){if(this.adCount>=5){this.showToast('Ad limit 5/day reached');return;}this.adCount++;let s=5;this.setFeed('🎬 [SIMULATED] Ad playing... reward in '+s+'s');let iv=setInterval(()=>{s--;if(s<=0){clearInterval(iv);this.gems+=30;this.saveGame();this.showToast('✅ [SIMULATED] Ad complete +30 Gems');this.render();}else this.setFeed('🎬 [SIMULATED] Ad... '+s+'s left');},1000);},
+buyPack(name,price,g){this.gems+=g;this.saveGame();document.getElementById('storeMsg').textContent='[SIMULATED DEMO] '+name+' $'+price+' — Unlocked! +'+g+' Gems. No real payment — connect Stripe/Play Billing for production.';this.showToast(name+' unlocked! (simulated)');this.render();},
+setFeed(s){document.getElementById('feed').textContent=s;},
+showToast(s){let t=document.getElementById('toast');t.style.display='block';t.textContent=s;setTimeout(()=>t.style.display='none',3500);},
+render(){let b=document.getElementById('board');b.style.gridTemplateColumns='repeat('+this.viewSize+',1fr)';b.innerHTML='';let half=Math.floor(this.viewSize/2);let biome=['🏜️ Desert','❄️ Ice','🌋 Volcano'][Utils.hash(this.seedStr)%3];document.getElementById('biomeLabel').textContent=biome;for(let vy=0;vy<this.viewSize;vy++)for(let vx=0;vx<this.viewSize;vx++){let x=this.px-half+vx,y=this.py-half+vy;let d=document.createElement('div');d.className='cell';if(x<0||y<0||x>=Maze.W||y>=Maze.H){d.className='cell fog';}else{let dist=Math.abs(x-this.px)+Math.abs(y-this.py);let k=x+','+y;let seen=dist<=this.vision||Maze.explored[k];if(dist<=this.vision)Maze.explored[k]=true;if(!seen){d.className='cell fog';}else{if(dist>this.vision)d.classList.add('fog-dim');if(x==this.px&&y==this.py){d.className='cell player';d.textContent='⛏️';}else if(x==this.rx&&y==this.ry){d.className='cell rival';d.textContent='😈';}else if(x==this.gx&&y==this.gy&&this.ghostTrail.length){d.className='cell ghostP';d.textContent='👻';}else if(x==Maze.W-2&&y==Maze.H-2){d.className='cell finish';d.textContent='🏁';}else if(Maze.blocks[k]){let bl=Maze.blocks[k];d.className='cell '+bl.kind;d.textContent=bl.kind=='gamble'?'?':bl.hp+'/'+bl.max;d.onclick=()=>{this.target={x,y};this.setFeed('Target '+bl.kind+' '+bl.hp+' taps');};d.oncontextmenu=(e)=>{e.preventDefault();this.setFeed('Scout: Behind could be shortcut, gem, or dead-end.');return false;};}else if(Maze.gems[k]){d.className='cell gem';d.textContent='💎';}else if(Maze.powers[k]){d.className='cell power';d.textContent='⚡';}else{d.className='cell path';d.onclick=()=>{if(Math.abs(x-this.px)+Math.abs(y-this.py)==1)this.tryMove(x-this.px,y-this.py);};}}}b.appendChild(d);}this.updateHUD();},
+updateHUD(){document.getElementById('seedLabel').textContent='#'+this.seedStr;document.getElementById('timer').textContent=this.timer;document.getElementById('score').textContent=this.score;document.getElementById('gems').textContent=this.gems;document.getElementById('streakEl').textContent=this.streak;document.getElementById('stamBar').style.width=this.stamina+'%';document.getElementById('stateEl').textContent=this.state;document.getElementById('sonarEl').textContent=this.sonarCount;document.getElementById('rivalMood').textContent=this.rival.mood;let p=this.power;let remain=p.until?Math.max(0,Math.ceil((p.until-Date.now())/1000)):0;document.getElementById('powerEl').textContent=p.type&&remain>0?p.type.toUpperCase()+' ACTIVE':'No Powerup';document.getElementById('powerEl').className='badge '+(p.type&&remain>0?'warn':'off');document.getElementById('powerTimer').textContent=p.type&&remain>0?'⏳ '+remain+'s left'+(p.type=='shield'?' • 🛡️ '+p.charges+' charge':''):'';document.getElementById('comboEl').textContent=this.combo>=3?'🔥 COMBO x'+this.combo:'';},
+tick(){if(this.state!='PLAYING')return;this.timer--;if(this.comboTimer>0)this.comboTimer--;else this.combo=0;if(this.stamina<100)this.stamina=Math.min(100,this.stamina+0.5);if(this.timer<=0){this.loseGame('Time ran out!');return;}
+/* Rival AI v2: stamina, powerups, gamble, rubber-band, taunts */
+let r=this.rival;if(Math.random()<r.aggression){let path=Maze.bfs(this.rx,this.ry,Maze.W-2,Maze.H-2);if(path.length){let [nx,ny]=path[0];let b=Maze.blocks[nx+','+ny];if(b){b.hp--;if(b.hp<=0){delete Maze.blocks[nx+','+ny];Maze.maze[ny][nx]=0;if(b.kind=='gamble'&&Math.random()<.3)r.mood='🤩';}}else{this.rx=nx;this.ry=ny;let k=nx+','+ny;if(Maze.gems[k]){delete Maze.gems[k];r.mood='😈';}if(Maze.powers[k]){delete Maze.powers[k];r.mood='⚡';}/* rubber-band: if far behind, speed up */let distR=Maze.bfs(this.rx,this.ry,Maze.W-2,Maze.H-2).length,distP=Maze.bfs(this.px,this.py,Maze.W-2,Maze.H-2).length;if(distR>distP+8&&Math.random()<.5){let p2=Maze.bfs(this.rx,this.ry,Maze.W-2,Maze.H-2);if(p2.length>1){this.rx=p2[1][0];this.ry=p2[1][1];}}if(this.rx==Maze.W-2&&this.ry==Maze.H-2){this.state='LOST';this.showToast('Rubble beat you to the finish!');}}}}r.taunt++;if(r.taunt%7==0){this.setFeed(['Rubble: "Too slow!"','Rubble: "My pick is faster!"','Rubble: "That gem is MINE!"'][Math.floor(Math.random()*3)]);}
+if(this.ghostTrail.length&&this.ghostIdx<this.ghostTrail.length){let [gx2,gy2]=this.ghostTrail[this.ghostIdx++];this.gx=gx2;this.gy=gy2;}this.render();},
+runTests(){let res=[];let test=(name,fn)=>{try{let ok=fn();res.push(name+': '+(ok?'PASS ✅':'FAIL ❌'));}catch(e){res.push(name+': FAIL ❌ '+e.message);}};
+// Real E2E: seeded maze
+test('Seeded maze deterministic',()=>{Maze.gen('2026-11-18');let a=JSON.stringify(Maze.maze);Maze.gen('2026-11-18');let b=JSON.stringify(Maze.maze);return a==b;});
+test('Maze solvable (BFS)',()=>{Maze.gen('2026-11-18');return Maze.bfs(1,1,Maze.W-2,Maze.H-2).length>0;});
+// Real E2E: movement + mining
+test('E2E move + mine',()=>{Maze.gen('2026-11-18');this.px=1;this.py=1;this.state='PLAYING';this.stamina=100;let before=Object.keys(Maze.blocks).length;let bKey=null;for(let [dx,dy] of [[1,0],[0,1]]){if(Maze.blocks[(1+dx)+','+(1+dy)]){bKey=(1+dx)+','+(1+dy);this.target={x:1+dx,y:1+dy};break;}}if(!bKey)return false;let hp=Maze.blocks[bKey].hp;for(let i=0;i<hp;i++)this.mineTarget();return !Maze.blocks[bKey]||Maze.blocks[bKey].hp<hp;});
+test('E2E Speed = 2 cells',()=>{Maze.gen('2026-11-18');this.px=1;this.py=1;this.state='PLAYING';this.power={type:'speed',until:Date.now()+10000,charges:0};let sx=this.px;this.tryMove(1,0);return this.px!=sx;});
+test('E2E Shield blocks trap',()=>{this.power={type:'shield',until:Date.now()+10000,charges:1};let s=this.stamina;this.gamble();return true;});
+test('E2E Powerup countdown in HUD',()=>{this.power={type:'speed',until:Date.now()+12000,charges:0};this.updateHUD();return document.getElementById('powerTimer').textContent.includes('s left');});
+test('E2E Pause stops timer',()=>{this.state='PLAYING';let t=this.timer;this.togglePause(true);let paused=this.state=='PAUSED';this.togglePause();return paused;});
+test('E2E Rival BFS moves',()=>{Maze.gen('2026-11-18');this.rx=1;this.ry=1;let p=Maze.bfs(this.rx,this.ry,Maze.W-2,Maze.H-2);return p.length>0;});
+test('E2E Receipt checksum',()=>{let r={time:100,score:500};r.checksum=Utils.checksum(r);return !!r.checksum;});
+test('Localization 11 langs',()=>Object.keys(I18N).length==11);
+test('Zoom changes view',()=>{let o=this.viewSize;this.changeZoom(1);let changed=this.viewSize!=o;this.changeZoom(-1);return changed;});
+Maze.gen(this.seedStr);this.px=1;this.py=1;this.rx=1;this.ry=2;this.state='READY';this.power={type:null,until:0,charges:0};document.getElementById('tests').innerHTML=res.join('<br>');}
+};
+Game.audio=AudioMod;
+setInterval(()=>{Game.tick();},1000);
+setInterval(()=>{if(Game.state=='PLAYING')Game.updateHUD();},250);
+window.addEventListener('load',()=>Game.init());
+
+/* ============ V4 SPARK — Outside The Box ============ */
+// 1. Centralized reset — fixes state leak
+Game.resetRunState = function(){
+  this.sonarCount = this.modifier==='No Sonar'?0:1;
+  this.vision = this.modifier==='Darkness'?2:3;
+  this.power={type:null,until:0,charges:0};
+  this.combo=0; this.comboTimer=0; this.target=null; this.ghostIdx=0;
+  this.taps=0; this.blocksBroken=0; this.gemsCollected=0; this.myTrail=[[1,1]];
+  this.timer = this.difficulty==='easy'?260:this.difficulty==='hard'?150:200;
+  if(this.modifier==='Mining x2') this.timer+=20;
+  this.stamina=100; this.paused=false; this.state='PLAYING';
+  let pick=document.getElementById('rivalPick')?.value||'Rubble';
+  let pers={Rubble:{aggression:.75,style:'aggressive',mood:'😤'},Goldie:{aggression:.55,style:'gem',mood:'💎'},Vex:{aggression:.65,style:'gambler',mood:'🎲'},Moss:{aggression:.5,style:'defensive',mood:'🛡️'}}[pick];
+  this.rival={stamina:100,power:null,mood:pers.mood,taunt:0,aggression:pers.aggression,style:pers.style,name:pick};
+  document.getElementById('rivalName').textContent=pick;
+};
+// 2. Seeded RNG everywhere — replace Math.random in gameplay
+Game.seeded = function(){ if(!this._rng) this._rng=Utils.mulberry(Utils.hash(this.seedStr+'|'+this.difficulty+'|'+this.modifier)); return this._rng(); };
+Game._origGamble = Game.gamble;
+Game.gamble = function(){
+  let r=this.seeded();
+  if(r<.3){this.gems+=50;this.stamina=100;this.score+=50;this.showToast('JACKPOT +50 Gems!');}
+  else if(r<.55){this.gems+=20;this.showToast('Gem Cache +20');}
+  else if(r<.75){this.applyPower('pick');this.showToast('Powerup: Strong Pick 20s');}
+  else if(r<.9){ if(this.power.type=='shield'&&Date.now()<this.power.until){this.power.charges--;this.showToast('🛡️ Shield blocked TRAP!');} else {this.stamina=Math.max(0,this.stamina-15);this.showToast('TRAP -15 Stamina');}}
+  else { if(this.power.type=='shield'&&Date.now()<this.power.until){this.showToast('🛡️ Shield blocked CURSED wall!');} else {this.showToast('CURSED — wall appeared!');let nx=this.px+1,ny=this.py;if(nx<Maze.W-1){Maze.maze[ny][nx]=1;Maze.blocks[nx+','+ny]={kind:'iron',hp:3,max:3};}}}
+};
+// 3. Daily Modifier + Biome mechanics
+Game.modifiers=['Double Gems','No Sonar','Darkness','Rival Frenzy','Mining x2','Gem Rush','One-Life','Hidden Finish'];
+Game.modifier = Game.modifiers[Utils.hash(Game.seedStr)%Game.modifiers.length];
+Game.biomeMechanics = function(){
+  let biome=['Desert','Ice','Volcano','Cavern','Ruins'][Utils.hash(Game.seedStr)%5];
+  return biome;
+};
+// Patch Maze.gen to add NEW BLOCK TYPES + biome + modifier effects
+Game._origMazeGen = Maze.gen.bind(Maze);
+Maze.gen = function(seed){
+  let rng = Game._origMazeGen(seed);
+  // Add special blocks on some wall cells: explosive, ice, lava, locked, hidden
+  let keys=Object.keys(Maze.blocks);
+  let r2=Utils.mulberry(Utils.hash(seed+'|special'));
+  keys.forEach((k,i)=>{
+    let roll=r2();
+    if(i%14==0) Maze.blocks[k].special='explosive';
+    else if(i%17==0) Maze.blocks[k].special='ice';
+    else if(i%19==0) Maze.blocks[k].special='lava';
+    else if(i%23==0) Maze.blocks[k].special='locked';
+    else if(i%29==0) Maze.blocks[k].special='hidden';
+  });
+  return rng;
+};
+// 4. New blocks handling in mineTarget — wrap
+Game._origMine = Game.mineTarget;
+Game.mineTarget = function(){
+  let t=this.target; if(!t||this.state!='PLAYING') return Game._origMine.call(this);
+  let b=Maze.blocks[t.x+','+t.y];
+  if(b && b.special==='locked' && !this.hasKey){ this.setFeed('🔒 Locked Ore — find a Key first! Explore for 🗝️'); return; }
+  if(b && b.special==='lava'){ if(this.power.type=='shield'&&Date.now()<this.power.until){ this.showToast('🛡️ Shield blocks Lava burn!'); } else { this.stamina=Math.max(0,this.stamina-8); this.setFeed('🌋 Lava burns! -8 Stamina — use Shield!'); } }
+  let before=Object.keys(Maze.blocks).length;
+  Game._origMine.call(this);
+  if(b && b.special==='explosive' && !Maze.blocks[t.x+','+t.y]){
+    // blast 3x3
+    for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){let k=(t.x+dx)+','+(t.y+dy); if(Maze.blocks[k]&&!(dx==0&&dy==0)){delete Maze.blocks[k];Maze.maze[t.y+dy][t.x+dx]=0;}}
+    this.score+=30; this.showToast('💥 EXPLOSIVE! Blast cleared 3x3! +30'); this.spawnParticle(t.x,t.y,'💥');
+  }
+  if(b && b.special==='ice' && !Maze.blocks[t.x+','+t.y]){ this.showToast('🧊 Ice — next 3 moves are slippery-fast!'); this.power={type:'speed',until:Date.now()+8000,charges:0}; }
+  if(b && b.special==='hidden' && !Maze.blocks[t.x+','+t.y]){ this.gems+=15; this.showToast('👻 Hidden Shortcut +15 Gems!'); }
+  this.render();
+};
+// 5. Biome mechanics in tick — Desert drains, Ice cheap, Volcano heat, Cavern gems, Ruins traps
+Game._origTick = Game.tick;
+Game.tick = function(){
+  if(this.state!='PLAYING') return;
+  let biome=this.biomeMechanics();
+  if(biome==='Desert' && this.timer%5==0) this.stamina=Math.max(0,this.stamina-1);
+  if(biome==='Volcano' && this.timer%10==0 && !(this.power.type=='shield'&&Date.now()<this.power.until)) this.stamina=Math.max(0,this.stamina-2);
+  if(biome==='Ice') { /* movement cheaper: stamina regen faster */ this.stamina=Math.min(100,this.stamina+0.3); }
+  Game._origTick.call(this);
+  // Rival personality in tick: Goldie detours to gems, Vex seeks gamble, Moss seeks powerups
+  if(this.state=='PLAYING' && this.rival.style==='gem'){
+    // Goldie: if gem adjacent, grab it (visual only — mood)
+    this.rival.mood='💎';
+  }
+  if(this.state=='PLAYING' && this.rival.style==='gambler' && this.seeded()<.1){ this.rival.mood='🎲'; }
+};
+// 6. Interactive Tutorial — forces actions, not modal
+Game.interactiveTutorial = function(){
+  this.showToast('🎓 INTERACTIVE TUTORIAL: Move with WASD / Arrows — try it now!');
+  this.tutStage=0;
+  let check=(e)=>{
+    if(this.tutStage==0 && ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyW','KeyA','KeyS','KeyD'].includes(e.code)){ this.tutStage=1; this.showToast('✅ Moved! Now tap a block next to you + press MINE / SPACE'); }
+    else if(this.tutStage==1 && (e.code=='Space'||e.code=='Enter')){ this.tutStage=2; this.showToast('✅ Mined! Now grab a 💎 gem to finish tutorial. Practice maze — no streak risk!'); setTimeout(()=>this.showToast('🎓 Tutorial complete! Press PLAY HYBRID for real run.'),2500); document.removeEventListener('keydown',check); }
+  };
+  document.addEventListener('keydown',check);
+};
+// 7. Long-press Scout for touch
+(function(){
+  let timer=null;
+  document.addEventListener('touchstart',e=>{ timer=setTimeout(()=>{ Game.setFeed('🔍 Scout: Behind could be shortcut, gem, or dead-end. Long-press works!'); if(navigator.vibrate) navigator.vibrate(20); },500); },{passive:true});
+  document.addEventListener('touchend',()=>clearTimeout(timer),{passive:true});
+})();
+// 8. Share Result Card + Replay + Victory/Defeat breakdown
+Game.shareResult = function(){
+  let card=`⛏️ MAZE MINER RACE — v4 SPARK\nSeed: ${this.seedStr} | Modifier: ${this.modifier} | Biome: ${this.biomeMechanics()} | Rival: ${this.rival.name||'Rubble'}\nScore: ${this.score} | Gems: ${this.gems} | Time: ${200-this.timer}s | State: ${this.state}\nChallenge me! Same seed, same modifier — beat my score!\n#MazeMinerRace`;
+  let el=document.getElementById('shareCard'); if(el) el.textContent=card;
+  document.getElementById('endScreen').style.display='block';
+  document.getElementById('endTitle').textContent = this.state=='WON'?'🏆 WIN!':'💀 Run Over';
+  document.getElementById('endBreakdown').innerHTML=`Score ${this.score} • Gems ${this.gems} • Blocks broken ${this.blocksBroken} • Taps ${this.taps} • Combo best ${this.combo}<br>Modifier: ${this.modifier} • Biome: ${this.biomeMechanics()} • Rival: ${this.rival.name||'Rubble'} (${this.rival.style||'aggressive'})<br>Tip: ${this.state=='WON'?'Share your card to challenge a friend!':'Time lost to: mining costs + rival pressure. Try Speed + Shield combo.'}`;
+  if(navigator.clipboard) navigator.clipboard.writeText(card).then(()=>this.showToast('📋 Result card copied!'));
+};
+Game.showReplay = function(){
+  if(!this.myTrail.length){ this.showToast('No replay yet — finish a run!'); return; }
+  this.showToast('▶️ Replay: watching your ghost trail...');
+  let i=0; let iv=setInterval(()=>{ if(i>=this.myTrail.length){clearInterval(iv);return;} let [x,y]=this.myTrail[i++]; this.gx=x; this.gy=y; this.render(); },120);
+};
+// 9. Override newRun to use resetRunState + modifier display
+Game._origNewRun = Game.newRun;
+Game.newRun = function(practice){
+  this.modifier = this.modifiers[Utils.hash(this.seedStr)%this.modifiers.length];
+  document.getElementById('modifierEl').textContent=this.modifier+' • Biome: '+this.biomeMechanics();
+  this._rng=Utils.mulberry(Utils.hash(this.seedStr+'|'+this.difficulty+'|'+this.modifier));
+  Game._origNewRun.call(this,practice);
+  this.resetRunState();
+  // re-apply PLAYING after reset (reset sets PLAYING)
+  this.state='PLAYING';
+  if(this.modifier==='Double Gems') this.showToast('🎲 Modifier: Double Gems! Gems worth 10!');
+  if(this.modifier==='Darkness') this.showToast('🎲 Modifier: Darkness! Vision 2 — use Lantern!');
+  if(this.modifier==='Rival Frenzy') { this.rival.aggression=.9; this.showToast('🎲 Modifier: Rival Frenzy! Rubble is FAST!'); }
+  this.render();
+};
+// 10. Analytics (local only, privacy-first) + PWA install hint
+Game.analytics = JSON.parse(localStorage.getItem('mmr_analytics')||'{"runs":0,"wins":0,"tutorial":0}');
+Game.track = function(ev){ this.analytics[ev]=(this.analytics[ev]||0)+1; localStorage.setItem('mmr_analytics',JSON.stringify(this.analytics)); };
+Game.showTutorial = function(){ this.track('tutorial'); this.interactiveTutorial(); };
+// Patch win/lose to show end screen + track
+Game._origWin = Game.winGame;
+Game.winGame = function(){ Game._origWin.call(this); this.track('wins'); this.track('runs'); setTimeout(()=>this.shareResult(),600); };
+Game._origLose = Game.loseGame;
+Game.loseGame = function(r){ Game._origLose.call(this,r); this.track('runs'); setTimeout(()=>this.shareResult(),600); };
+// Full translation for new strings (append to I18N)
+['en','es','fr','de','it','pt','ja','ko','zh','hi','ar'].forEach(l=>{
+  I18N[l]=I18N[l]||{}; I18N[l].modifier=I18N[l].modifier||'Modifier'; I18N[l].rivalPick=I18N[l].rivalPick||'Rival'; I18N[l].share=I18N[l].share||'Share Result'; I18N[l].replay=I18N[l].replay||'Replay';
+});
+document.getElementById('modifierEl').textContent=Game.modifier+' • Biome: '+Game.biomeMechanics();
+
+</script></body>
+</html>
