@@ -1,11 +1,20 @@
-export function renderBoard({ element, grid, position }) {
-  if (!element) return;
-  element.style.gridTemplateColumns = `repeat(${grid[0].length}, 1fr)`;
-  element.replaceChildren();
-  grid.forEach((row, y) => row.forEach((cell, x) => {
-    const node = document.createElement('div');
-    node.className = `cell ${cell ? 'wall' : 'path'}`;
-    if (x === position[0] && y === position[1]) { node.className = 'cell player'; node.textContent = '⛏️'; }
-    element.appendChild(node);
-  }));
+export function renderBoard(el, grid, player, goal) {
+  el.replaceChildren();
+  el.style.gridTemplateColumns = `repeat(${grid[0].length},36px)`;
+  grid.forEach((row, y) =>
+    row.forEach((cell, x) => {
+      const n = document.createElement('div');
+      n.className = `cell ${cell ? 'wall' : 'path'}`;
+      n.setAttribute('role', 'gridcell');
+      if (x === goal[0] && y === goal[1]) {
+        n.className = 'cell finish';
+        n.textContent = '🏁';
+      }
+      if (x === player[0] && y === player[1]) {
+        n.className = 'cell player';
+        n.textContent = '⛏️';
+      }
+      el.append(n);
+    }),
+  );
 }
