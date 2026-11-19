@@ -1,0 +1,9 @@
+{
+  "name": "Maze Miner Race v4 SPARK",
+  "short_name": "Maze Miner",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0b0f14",
+  "theme_color": "#f5b301",
+  "icons": []
+}
