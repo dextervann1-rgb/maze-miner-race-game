@@ -1,0 +1,6 @@
+{
+  "name": "@mmr/simulation",
+  "version": "10.0.0",
+  "type": "module",
+  "main": "replay.js"
+}

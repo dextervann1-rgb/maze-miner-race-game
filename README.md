@@ -1,17 +1,16 @@
-# Maze Miner Race — v4 SPARK
-
-A playable, offline-capable browser game prototype combining seeded maze racing, mining, fog of war, rival AI, powerups, streaks, quests, achievements, and daily modifiers.
+# Maze Miner Race v10.0.0
+Deterministic maze race. Server-authoritative replay verification.
 
 ## Run
-
-Open `index.html` directly in a modern browser. The v4 playable build is self-contained and requires no build step.
-
-The `src/` directory contains the v4 modular foundation for the next build-out, while `maze_miner_race_v4.html` is a named copy of the playable entry point.
-
-## Tests
-
-Install dependencies with `npm install`, then run `npm test` for the external Vitest suite.
-
-## Roadmap
-
-`server-spec.md` describes the backend validation and online leaderboard plan for v5.
+```bash
+cp .env.example .env  # set SESSION_SECRET
+npm ci
+npm start  # http://localhost:3001/
+```
+## Verify
+Play → Win → ✅ SERVER VERIFIED. Server off → ⚠️ LOCAL ONLY.
+## Test
+```bash
+npm test
+npx playwright test
+```

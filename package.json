@@ -1,30 +1,18 @@
 {
-  "name": "maze-miner-race-v5",
-  "version": "5.0.0",
-  "private": true,
+  "name": "maze-miner-race",
+  "version": "10.0.0",
+  "description": "Maze Miner Race v10.0.0 \u2014 deterministic maze race, server-authoritative replay verification",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "lint": "eslint .",
-    "format:check": "prettier --check .",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run tests",
-    "test:watch": "vitest",
-    "e2e": "playwright test"
+    "start": "node server/index.js",
+    "dev": "SESSION_SECRET=dev-secret node server/index.js",
+    "test": "node --test tests/server.test.mjs",
+    "test:e2e": "playwright test"
   },
-  "dependencies": {
-    "vite": "^6.0.0"
+  "engines": {
+    "node": ">=20"
   },
   "devDependencies": {
-    "@playwright/test": "^1.49.1",
-    "@types/node": "^22.10.2",
-    "eslint": "^9.17.0",
-    "eslint-config-prettier": "^9.1.0",
-    "globals": "^15.15.0",
-    "prettier": "^3.4.2",
-    "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
+    "@playwright/test": "^1.65.1"
   }
 }
