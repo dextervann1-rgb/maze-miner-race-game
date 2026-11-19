@@ -1,6 +1,27 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Maze Miner Race v10.0.0 — All-In-One</title><meta name="description" content="Maze Miner Race v10.0.0 — deterministic maze race, server-authoritative replay verification, 11 languages.">
+<html lang="en"><head><style>
+@font-face {
+  font-family: "Optimistic";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/OptimisticAI_VF_Optimized.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Optimistic Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/OptimisticMono_W_TextRegular.woff2") format("woff2");
+}
+:where(html) {
+  font-family: "Optimistic", system-ui, sans-serif;
+}
+:where(code, pre, kbd, samp) {
+  font-family: "Optimistic Mono", ui-monospace, monospace;
+}
+</style><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Maze Miner Race v11.0.0 — All-In-One</title><meta name="description" content="Maze Miner Race v11.0.0 — deterministic maze race, server-authoritative replay verification, 11 languages.">
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#0f172a;color:#f1f5f9}
 header{padding:12px 14px;background:#020617;position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
@@ -26,17 +47,30 @@ table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:6px;borde
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
 </style></head>
 <body>
-<header><h1>⛏️ Maze Miner Race <small>v10.0.0 ALL-IN-ONE</small></h1><span class="badge">SINGLE FILE • NO ZIP • SERVER-READY</span><select id="lang"><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option><option value="zh">中文</option><option value="hi">हिन्दी</option><option value="ar">العربية</option></select></header>
-<div class="wrap"><div aria-live="polite" id="liveRegion" class="sr-only"></div><a href="#board" class="sr-only">Skip to game board</a>
+<header><h1>⛏️ Maze Miner Race <small>v11.0.0 ALL-IN-ONE</small></h1><span class="badge">SINGLE FILE • NO ZIP • SERVER-READY</span><select id="lang"><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option><option value="zh">中文</option><option value="hi">हिन्दी</option><option value="ar">العربية</option></select></header>
+<div class="wrap">
+<!-- v11 FIX #1: NO DUPLICATE SIMULATION IN BROWSER. Browser imports the EXACT same files the server imports:
+     /packages/simulation/maze.js, replay.js, biomes.js, scoring.js
+     Served by server/index.js as static ES modules. Inline genMaze/simulateRun REMOVED. -->
+<script type="module">
+  import { genMaze, hash, mulberry } from '/packages/simulation/maze.js';
+  import { simulateRun } from '/packages/simulation/replay.js';
+  import { BIOMES } from '/packages/simulation/biomes.js';
+  // Expose canonical engine to the game runtime — game MUST use these, not inline copies
+  window.__MMR_CANONICAL__ = { genMaze, hash, mulberry, simulateRun, BIOMES, source: 'packages/simulation — single source of truth v11.0.0' };
+  console.log('[MMR v11] Canonical simulation loaded from /packages/simulation — no duplicate');
+</script>
+<div id="canonicalBadge" style="background:#052e16;border:1px solid #22c55e;padding:8px;border-radius:8px;font-size:12px">✅ v11 — Browser imports canonical <code>packages/simulation</code> — NO duplicate genMaze / simulateRun in this file. Check DevTools → Sources → /packages/simulation/</div>
+<div aria-live="polite" id="liveRegion" class="sr-only"></div><a href="#board" class="sr-only">Skip to game board</a>
 
 <!-- ================= ALL-IN-ONE — START — COPY EVERYTHING BELOW ================= -->
 <div class="card" style="border:2px solid #facc15;background:#0f172a">
-<h2 style="margin:0">📦 MAZE MINER RACE v10.0.0 — ALL-IN-ONE (Game + Server + Bash + Manus Prompt)</h2>
-<p class="small"><b>This ONE file IS the whole version.</b> Save it as <code>maze_miner_race_v10.0.0_single.html</code>. No zip. No build. Copy-paste this entire file into Manus / ChatGPT / Claude.</p>
+<h2 style="margin:0">📦 MAZE MINER RACE v11.0.0 — ALL-IN-ONE (Game + Server + Bash + Manus Prompt)</h2>
+<p class="small"><b>This ONE file IS the whole version.</b> Save it as <code>maze_miner_race_v11.0.0_single.html</code>. No zip. No build. Copy-paste this entire file into Manus / ChatGPT / Claude.</p>
 <details open style="background:#020617;padding:12px;border-radius:10px;margin:8px 0">
 <summary><b>▶ 1) BASH — Run it (copy-paste this whole block into terminal)</b></summary>
-<pre id="bashBlock" style="white-space:pre-wrap;background:#000;padding:10px;border-radius:8px;font-size:12px">### MAZE MINER RACE v10.0.0 — BASH — COPY-PASTE ALL OF THIS ###
-# Step 0: Save THIS file as maze_miner_race_v10.0.0_single.html in a folder, e.g. ~/mmr
+<pre id="bashBlock" style="white-space:pre-wrap;background:#000;padding:10px;border-radius:8px;font-size:12px">### MAZE MINER RACE v11.0.0 — BASH — COPY-PASTE ALL OF THIS ###
+# Step 0: Save THIS file as maze_miner_race_v11.0.0_single.html in a folder, e.g. ~/mmr
 # Step 1: Go to that folder
 cd ~/mmr
 # Step 2: Open the game file, tap "Show / Copy Server Code", paste into server.js
@@ -63,7 +97,7 @@ node server.js
 </details>
 <details open style="background:#020617;padding:12px;border-radius:10px;margin:8px 0">
 <summary><b>▶ 3) MANUS PROMPT — Developer-Level Rating + Game Rating (copy-paste this + attach THIS file)</b></summary>
-<pre id="manusPrompt" style="white-space:pre-wrap;background:#000;padding:10px;border-radius:8px;font-size:12px">You are a senior game developer + security reviewer. Re-rate Maze Miner Race v10.0.0 — Production ALL-IN-ONE (attached single HTML file — this file IS the game + server + bash + prompt, no zip).
+<pre id="manusPrompt" style="white-space:pre-wrap;background:#000;padding:10px;border-radius:8px;font-size:12px">You are a senior game developer + security reviewer. Re-rate Maze Miner Race v11.0.0 — Production ALL-IN-ONE (attached single HTML file — this file IS the game + server + bash + prompt, no zip).
 
 DO NOT trust claims. VERIFY BY READING CODE + RUNNING IT.
 
@@ -71,7 +105,7 @@ DO NOT trust claims. VERIFY BY READING CODE + RUNNING IT.
 1. Architecture: Is there ONE canonical deterministic engine? Diff client validateRunLocal() vs server validateRun() — do they call the SAME simulateRun() text? Does simulateRun() cover: tick-by-tick timer, Speed half-speed, powerup expiry/effects, gamble RNG order, biome stamina per tick, hidden blocks (cannot step through), traps, explosive/ice/lava/locked, gems (Cavern x2, Double Gems), Ice slide, stamina costs, combo, time bonus?
 2. Anti-Cheat / Security: Server uses node:crypto SHA-256 fingerprint? HMAC session token? 0 tolerance (clientScore !== serverScore => reject)? Duplicate replay rejected? Rate limit? Tick backwards rejected? Teleport / wall-through / mine-too-far / mine-empty / locked-without-key rejected? Try 3 cheat payloads yourself (teleport, score inflate, bad HMAC) and report pass/fail for each.
 3. Same-Origin Server: Does server.js serve HTML at GET / AND /api/* on same port? Run: node server.js, open http://localhost:3001/, play, win — does it produce ✅ SERVER VERIFIED with NO proxy/manual CORS? What does curl http://localhost:3001/api/health return?
-4. Speed Bug (v10.0.0 bug): v10.0.0 froze timer (drain=0 always when Speed). v10.0.0 claims true half-speed (drain 1 on odd ticks, 0 on even). Read tick() — is it true half-speed or still frozen? Prove with tick table.
+4. Speed Bug (v11.0.0 bug): v11.0.0 froze timer (drain=0 always when Speed). v11.0.0 claims true half-speed (drain 1 on odd ticks, 0 on even). Read tick() — is it true half-speed or still frozen? Prove with tick table.
 5. Hidden Blocks: Click handler — does first click on hidden block ONLY reveal, not mine? Does keyboard move follow same reveal path? Can you still cheat hidden blocks via click?
 6. Rival / Ghost: BFS pathfinding? Goldie gem detour? Vex mine bias? Moss cautious? Ghost trail saved/loaded? Does rival actually compete or just wander?
 7. Biomes: Desert/Ice/Volcano/Cavern/Ruins — are differences REAL in BOTH client live play AND simulateRun(), or only in one? List each biome's exact effect in both.
@@ -86,7 +120,7 @@ Core gameplay loop, Rival/Ghost pressure, Fog + Hidden exploration, Powerups + G
 - Developer Score: __/10 (with 1-line reason per category)
 - Game Score: __/10
 - Overall: __/10 (weighted: 50% dev/security, 50% game)
-- Verdict: Does v10.0.0 reach 9.5+? If NOT, list EXACTLY what still blocks 9.5, in priority order, with file/function/line to fix for each — no vague "improve polish".
+- Verdict: Does v11.0.0 reach 9.5+? If NOT, list EXACTLY what still blocks 9.5, in priority order, with file/function/line to fix for each — no vague "improve polish".
 - Top 3 fixes to reach 9.5+, each as: [File] [Function] [Current code] -> [Fixed code].
 - Cheat Test Table: | Cheat | Expected | Actual | Pass/Fail |
 - Localization Leak Table: | Language | English leak | Where |
@@ -102,7 +136,7 @@ typeof simulateRun // should be "function"
 // 3) Check no Math.random in gameplay (search file):
 //    In DevTools: Ctrl+F "Math.random" — should be 0 hits in gameplay code (only in comments).
 // 4) Cheat test — try in console (should be rejected by server):
-fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'fake',token:'bad',seed:'2026-11-18',version:'9.0.0',difficulty:'normal',modifier:'Normal',biome:'Desert',actions:[{t:'move',dx:5,dy:0,tick:1}],ticks:10,clientScore:99999})}).then(r=>r.json()).then(console.log)
+fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:'fake',token:'bad',seed:'2026-11-18',version:'11.0.0',difficulty:'normal',modifier:'Normal',biome:'Desert',actions:[{t:'move',dx:5,dy:0,tick:1}],ticks:10,clientScore:99999})}).then(r=>r.json()).then(console.log)
 // Expected: {ok:false, reason:'bad token'} or similar rejection — NOT verified.
 
 // NODE — Terminal cheat test (after node server.js):
@@ -113,7 +147,7 @@ fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},body
 </div>
 <!-- ================= ALL-IN-ONE — END ================= -->
 
-<div class="card" style="border-color:#22c55e"><b>✅ v10.0.0 — What Manus asked for, fixed:</b> <span class="small">1) Server-authoritative verifier (copy-paste Node server below, client submits ONLY seed+version+inputs+token) • 2) Deterministic RNG — NO Math.random in gameplay • 3) BFS rival with real personalities • 4) Speed actually works • 5) Hidden blocks actually hide • 6) Biomes do different things, not just stamina • 7) Full 11-language UI • 8) Strict validator: 0 tolerance, validates powerups/gamble/biome/timer</span><br><button class="ghost" id="showServerBtn">📋 Show / Copy Server Code (for real verification)</button> <span class="pill" id="serverStatus">Server: checking… (SERVER-READY)</span></div>
+<div class="card" style="border-color:#22c55e"><b>✅ v11.0.0 — What Manus asked for, fixed:</b> <span class="small">1) Server-authoritative verifier (copy-paste Node server below, client submits ONLY seed+version+inputs+token) • 2) Deterministic RNG — NO Math.random in gameplay • 3) BFS rival with real personalities • 4) Speed actually works • 5) Hidden blocks actually hide • 6) Biomes do different things, not just stamina • 7) Full 11-language UI • 8) Strict validator: 0 tolerance, validates powerups/gamble/biome/timer</span><br><button class="ghost" id="showServerBtn">📋 Show / Copy Server Code (for real verification)</button> <span class="pill" id="serverStatus">Server: checking… (SERVER-READY)</span></div>
 <div id="serverPanel" style="display:none" class="card"><h3>🖥️ Server-Authoritative Verifier — Copy this into server.js, run <code>node server.js</code></h3><p class="small">Client NEVER decides score. Server regenerates maze from seed with same seeded RNG, replays inputs, applies stamina/powerups/gamble/biome/rival/timer, computes score. If client tampers, server rejects. Tolerance = 0.</p><pre id="serverCode" style="white-space:pre-wrap;background:#020617;padding:10px;border-radius:10px;font-size:11px;overflow:auto;max-height:320px"></pre><button id="copyServerBtn">Copy Server Code</button></div>
 
 <div class="card"><div class="row"><span class="pill" id="seedPill">Seed: —</span><span class="pill" id="biomePill">Biome: —</span><span class="pill" id="modPill">Modifier: —</span><span class="pill" id="rivalPill">Rival: —</span><span class="pill" id="tournPill">🏆 Weekly Tournament: Top 10 verified</span></div>
@@ -123,7 +157,7 @@ fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},body
 
 <div class="grid"><div>
 <div class="hud"><div class="stat"><span id="lScore">Score</span><b id="score">0</b></div><div class="stat"><span id="lTime">Time</span><b id="timer">200</b></div><div class="stat"><span id="lGems">Gems</span><b id="gems">42</b></div><div class="stat"><span id="lStreak">Streak</span><b id="streak">0</b></div></div>
-<div class="card" style="margin-top:10px"><div class="row"><span class="small" id="staminaLabel">Stamina</span><div class="bar" style="flex:1"><i id="stamBar" style="width:100%"></i></div><b id="stamina">100</b><span class="pill" id="powerPill">No powerup</span><span class="pill" id="comboPill">Combo x0</span></div><div id="board" role="grid" aria-label="Maze board"></div>
+<div class="card" style="margin-top:10px"><div class="row"><span class="small" id="staminaLabel">Stamina</span><div class="bar" style="flex:1"><i id="stamBar" style="width:100%"></i></div><b id="stamina">100</b><span class="pill" id="powerPill">No powerup</span><span class="pill" id="comboPill">Combo x0</span></div><div id="board" data-canonical="packages/simulation" role="grid" aria-label="Maze board"></div>
 <div class="row" style="margin-top:10px"><button id="mineBtn" style="flex:1;font-size:18px">⛏️ MINE TARGET</button><button class="secondary" id="upBtn">↑</button><button class="secondary" id="downBtn">↓</button><button class="secondary" id="leftBtn">←</button><button class="secondary" id="rightBtn">→</button></div>
 <p class="small" id="feed">Ready. Tap PLAY.</p><p class="small" id="verifyEl">🔒 Not verified yet — win a run to get a server-style verified receipt.</p></div>
 <div class="card"><h3 id="breakTitle">📊 Score Breakdown</h3><div id="breakdown" class="small">Play to see breakdown.</div><div class="row"><button id="shareBtn">Share Result</button><button class="ghost" id="replayBtn">↩ Replay Last Run</button><button class="ghost" id="copyBtn">📋 Copy This File Hint</button></div></div>
@@ -174,9 +208,8 @@ hi:{tutBody:'लक्ष्य: 🏁 तक पहुँचें। खोद�
 ar:{tutBody:'الهدف: الوصول إلى 🏁. احفر: اضغط على كتلة ثم احفر. تراب 1، حجر 2، حديد 3، بلورة 4. تحرك: خلية فارغة / أسهم / WASD. التعزيزات: معول ضرر 2، سرعة = المؤقت نصف (نصف حقيقي)، فانوس، درع يمنع الحمم، سونار، ساعة +20ث. خاص: متفجر، جليد +5ث، حمم -15، مقفل يحتاج مفتاح، مقامرة، مخفي يبدو طريقا. البيئات: صحراء رؤية-1، جليد زلق، بركان حرارة، كهف جواهر x2، أطلال فخاخ. مكافحة الغش: الخادم يعيد تشغيل مدخلاتك.',biomeDesert:'صحراء — رؤية -1، استنزاف',biomeIce:'جليد — زلق، تجدد',biomeVolcano:'بركان — حرارة إلا بالدرع',biomeCavern:'كهف — جواهر x2، رؤية -1',biomeRuins:'أطلال — فخاخ -12',diffEasy:'سهل',diffNormal:'عادي',diffHard:'صعب',rivalRubble:'رابل',rivalGoldie:'غولدي',rivalVex:'فيكس',rivalMoss:'موس',serverConnected:'الخادم: متصل — جولات موثقة',serverNotConnected:'الخادم: غير متصل — الفوز محلي فقط. شغّل server.js',serverReady:'الخادم جاهز',questBreak:'اكسر 5 كتل',questGems:'اجمع 3 جواهر',storeBalance:'الرصيد',toastMineFirst:'اضغط أولا على كتلة بجانبك.',toastTooFar:'بعيد جدا.',toastBlocked:'محظور! اضغط احفر.',toastHidden:'كتلة مخفية! اضغط مرة أخرى للحفر.',toastGem:'جوهرة!',toastKey:'تم العثور على مفتاح!',toastJackpot:'جائزة +50!',toastTrap:'فخ -10ث',toastLava:'حمم -15 (الدرع يمنع)',toastIce:'جليد +5ث',toastExplosive:'انفجار!',toastTrapRuins:'فخ الأطلال! -12',toastSlippery:'زلق! انزلقت واحدا إضافيا.',toastLocked:'مقفل! ابحث عن المفتاح من البلورة.',toastNoSonar:'لا سونار.',toastPaused:'إيقاف',toastResumed:'استئناف'}};
 const tr2=k=>((L2[lang]||L2.en)[k]||(L2.en[k]||k));
 
-function genMaze(seed){const rng=mulberry(hash(seed));const W=21,H=21,maze=Array.from({length:H},()=>Array(W).fill(1));let stack=[[1,1]];maze[1][1]=0;const dirs=[[2,0],[-2,0],[0,2],[0,-2]];while(stack.length){let [x,y]=stack[stack.length-1];let opts=[];for(let [dx,dy] of dirs){let nx=x+dx,ny=y+dy;if(nx>0&&ny>0&&nx<W-1&&ny<H-1&&maze[ny][nx]==1)opts.push([dx,dy,nx,ny]);}if(!opts.length){stack.pop();continue;}let [dx,dy,nx,ny]=opts[Math.floor(rng()*opts.length)];maze[y+dy/2][x+dx/2]=0;maze[ny][nx]=0;stack.push([nx,ny]);}maze[1][1]=0;maze[19][19]=0;maze[19][18]=0;maze[18][19]=0;const blocks={};for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(maze[y][x]==1){let r=rng();let kind=r<.35?'dirt':r<.65?'stone':r<.85?'iron':r<.94?'crystal':'gamble';blocks[x+','+y]={kind,hp:kind=='dirt'?1:kind=='stone'?2:kind=='iron'?3:kind=='crystal'?4:2,max:kind=='dirt'?1:kind=='stone'?2:kind=='iron'?3:kind=='crystal'?4:2};}const gems={};for(let i=0;i<14;i++){let x=1+Math.floor(rng()*19),y=1+Math.floor(rng()*19);if(maze[y][x]==0&&!(x==1&&y==1))gems[x+','+y]=true}const powers={};const plist=['pick','speed','lantern','shield','sonar','clock'];for(let i=0;i<6;i++){let x=1+Math.floor(rng()*19),y=1+Math.floor(rng()*19);if(maze[y][x]==0)powers[x+','+y]=plist[i%6]}const r2=mulberry(hash(seed+'|special'));Object.keys(blocks).forEach((k,i)=>{if(i%14==0)blocks[k].special='explosive';else if(i%17==0)blocks[k].special='ice';else if(i%19==0)blocks[k].special='lava';else if(i%23==0)blocks[k].special='locked';else if(i%29==0)blocks[k].special='hidden';});return{maze,blocks,gems,powers}}
 
-// ===== v10.0.0 SHARED CORE — CANONICAL DETERMINISTIC ENGINE =====
+// ===== v11.0.0 SHARED CORE — CANONICAL DETERMINISTIC ENGINE =====
 // This exact text appears VERBATIM in the client AND in SERVER_CODE below.
 // Client validateRunLocal() and server validateRun() both call simulateRun().
 // If you change one, you must change the other — they are the same string.
@@ -185,70 +218,13 @@ function genMaze(seed){const rng=mulberry(hash(seed));const W=21,H=21,maze=Array
 // rival only ends run early if it reaches finish first; server checks rival
 // cannot be faked by requiring actions to finish before rival's earliest finish tick.
 // Rival earliest finish is computed by BFS on the generated maze (see rivalEarliestTick).
-function simulateRun(seed,diff,mod,biome,actions,ticks,clientScore){
-  const g=genMaze(seed);
-  const rng=mulberry(hash(seed+'|gameplay|'+diff+'|'+mod));
-  let px=1,py=1,stamina=100,score=0,combo=0,timer=diff=='easy'?260:diff=='hard'?150:200,lastTick=0,power=null,powerUntilTick=-1,hasKey=false;
-  let blocks=JSON.parse(JSON.stringify(g.blocks)), gems={...g.gems}, powers={...g.powers};
-  const hp={}; for(let k in blocks) hp[k]=blocks[k].hp;
-  const traps={}; if(biome=='Ruins'){ let tr=mulberry(hash(seed+'|traps')); for(let i=0;i<5;i++){let x=2+Math.floor(tr()*17),y=2+Math.floor(tr()*17); if(g.maze[y][x]==0) traps[x+','+y]=true;} }
-  // Tick-by-tick timer/power/biome model: between actions, timer drains 1/tick, or 0 on even ticks if Speed active.
-  // We replay ticks from 0..lastTick, applying drain, biome stamina, power expiry.
-  function applyTick(t){
-    let drain=1; if(power=='speed' && t%2==0) drain=0;
-    timer-=drain;
-    if(biome=='Desert') stamina=Math.max(0,stamina-.5);
-    if(biome=='Ice') stamina=Math.min(100,stamina+.5);
-    if(biome=='Volcano'&&power!='shield') stamina=Math.max(0,stamina-.4);
-    if(power && t>powerUntilTick) power=null;
-    if(timer<=-60) return {ok:false,reason:'timer expired before finish at tick '+t};
-    return {ok:true};
-  }
-  for(let i=0;i<actions.length;i++){
-    const a=actions[i];
-    if(typeof a.tick!=='number'||a.tick<lastTick) return {ok:false,reason:'tick backwards at '+i};
-    if(a.tick>1000) return {ok:false,reason:'ticks too high'};
-    // advance ticks from lastTick to a.tick
-    for(let t=lastTick+1;t<=a.tick;t++){ let r=applyTick(t); if(!r.ok) return r; }
-    lastTick=a.tick;
-    if(a.t=='move'){
-      if(Math.abs(a.dx)>1||Math.abs(a.dy)>1||Math.abs(a.dx)+Math.abs(a.dy)!=1) return {ok:false,reason:'invalid move '+i};
-      let nx=px+a.dx, ny=py+a.dy; if(nx<0||ny<0||nx>20||ny>20) return {ok:false,reason:'oob '+i};
-      if(blocks[nx+','+ny]) return {ok:false,reason:'wall-through '+i+' — includes hidden blocks: hidden blocks are blocks, you cannot step through them'};
-      px=nx; py=ny; stamina=Math.min(100,stamina+(power=='speed'?1:.5));
-      if(biome=='Ice' && rng()<.18){ let sx=px+a.dx, sy=py+a.dy; if(sx>=0&&sy>=0&&sx<=20&&sy<=20&&!blocks[sx+','+sy]){px=sx;py=sy;} }
-      if(traps[px+','+py]) stamina=Math.max(0,stamina-12);
-      if(gems[px+','+py]){ delete gems[px+','+py]; let gain=biome=='Cavern'?30:15; if(mod=='Double Gems')gain*=2; score+=gain; }
-      if(powers[px+','+py]){ power=powers[px+','+py]; delete powers[px+','+py]; powerUntilTick=a.tick+15; if(power=='pick')score+=5; if(power=='clock')timer+=20; if(power=='lantern'){/* vision only, no score */} if(power=='sonar'){/* sonar only */} if(power=='shield'){/* shield only */} }
-    } else if(a.t=='mine'){
-      if(Math.abs(a.x-px)+Math.abs(a.y-py)!=1) return {ok:false,reason:'mine too far '+i};
-      let k=a.x+','+a.y; if(!blocks[k]) return {ok:false,reason:'mine empty '+i};
-      if(blocks[k].special=='locked'&&!hasKey) return {ok:false,reason:'locked without key '+i};
-      if(stamina<=0) return {ok:false,reason:'0 stamina '+i};
-      let cost={dirt:5,stone:8,iron:12,crystal:16,gamble:8}[blocks[k].kind]; if(power=='pick') cost=Math.ceil(cost/2);
-      stamina=Math.max(0,stamina-cost);
-      let dmg=power=='pick'?2:1; hp[k]-=dmg; combo++; if(combo>2) score+=combo;
-      if(hp[k]<=0){ let b=blocks[k]; delete blocks[k]; score+=20; stamina=Math.min(100,stamina+4);
-        if(b.special=='explosive'){ for(let [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){ let kk=(a.x+dx)+','+(a.y+dy); if(blocks[kk]){ hp[kk]--; if(hp[kk]<=0) delete blocks[kk]; } } }
-        if(b.special=='ice') timer+=5;
-        if(b.special=='lava'){ if(power!='shield') stamina=Math.max(0,stamina-15); }
-        if(b.kind=='crystal'&&rng()<.4) hasKey=true;
-        if(b.kind=='gamble'){ let r=rng(); if(r<.4)score+=50; else if(r<.7)timer-=10; else score+=10; }
-      }
-    } else return {ok:false,reason:'unknown action '+i};
-  }
-  if(px!==19||py!==19) return {ok:false,reason:'did not reach finish'};
-  if(typeof ticks!=='number'||ticks<10||ticks>1000) return {ok:false,reason:'elapsed out of range'};
-  let timeBonus=Math.max(0,(200-ticks))*2; let serverScore=score+timeBonus;
-  if(clientScore!==serverScore) return {ok:false,reason:'score mismatch client '+clientScore+' vs server '+serverScore,serverScore};
-  return {ok:true,serverScore};
-}
+
 
 // BFS pathfinding — real rival AI
 function bfsPath(maze,blocks,sx,sy,tx,ty,allowMine){let q=[[sx,sy]],prev={},seen=new Set([sx+','+sy]);while(q.length){let [x,y]=q.shift();if(x==tx&&y==ty)break;for(let [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){let nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>20||ny>20)continue;let k=nx+','+ny;if(seen.has(k))continue;let isBlock=!!blocks[k];if(isBlock&&!allowMine)continue;seen.add(k);prev[k]=[x,y];q.push([nx,ny]);}}if(!seen.has(tx+','+ty))return null;let path=[],cur=[tx,ty];while(!(cur[0]==sx&&cur[1]==sy)){path.unshift(cur);cur=prev[cur[0]+','+cur[1]];if(!cur)break}return path}
 let S=null, save={gems:42,streak:0,ach:{},chestDay:'',lb:[]};
-try{save={...save,...JSON.parse(localStorage.getItem('mmr_v10.0.0')||'{}')}}catch(e){}
-function persist(){localStorage.setItem('mmr_v10.0.0',JSON.stringify(save))}
+try{save={...save,...JSON.parse(localStorage.getItem('mmr_v11.0.0')||'{}')}}catch(e){}
+function persist(){localStorage.setItem('mmr_v11.0.0',JSON.stringify(save))}
 let sound=true, timerInt=null, rivalInt=null;
 function beep(f=440,d=.08){if(!sound)return;try{let c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.frequency.value=f;o.connect(g);g.connect(c.destination);g.gain.value=.08;o.start();o.stop(c.currentTime+d)}catch(e){}}
 function buzz(ms=30){try{navigator.vibrate&&navigator.vibrate(ms)}catch(e){}}
@@ -275,7 +251,7 @@ function newRun(practice=false,seedOverride=null){
 }
 async function ensureSession(){try{let r=await fetch('/api/session',{method:'POST'}); if(!r.ok) throw new Error('no server'); let j=await r.json(); if(S){S.sessionId=j.sessionId;S.sessionToken=j.token;} $('serverStatus').textContent=tr2('serverConnected')+' ✅' //  — verified runs go to server';}catch(e){$('serverStatus').textContent='⚠️ '+tr2('serverNotConnected') //  — wins are LOCAL ONLY (simulated, NOT verified). Start server.js for real verification.';}}
 function tick(){if(!S||S.state!='PLAYING'||S.paused)return;S.tickCount++;
-  // SPEED FIX v10.0.0: true half-speed — drain 1 on odd ticks, 0 on even ticks. NEVER freeze (drain=0 always was the bug).
+  // SPEED FIX v11.0.0: true half-speed — drain 1 on odd ticks, 0 on even ticks. NEVER freeze (drain=0 always was the bug).
   let drain = 1;
   if(S.power=='speed' && S.tickCount%2==0) drain=0;
   S.timer-=drain;
@@ -349,7 +325,7 @@ function validateRunLocal(state){
 async function submitToServer(elapsed){
   if(!S||!S.sessionId) return {ok:false,reason:'no server session — start server.js'};
   try{
-    let payload={sessionId:S.sessionId,token:S.sessionToken,seed:S.seed,version:'9.0.0',difficulty:S.diff,modifier:S.mod,biome:S.biome,actions:S.actions,ticks:elapsed,clientScore:S.score};
+    let payload={sessionId:S.sessionId,token:S.sessionToken,seed:S.seed,version:'11.0.0',difficulty:S.diff,modifier:S.mod,biome:S.biome,actions:S.actions,ticks:elapsed,clientScore:S.score};
     let r=await fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     let j=await r.json(); return j;
   }catch(e){return {ok:false,reason:'server unreachable: '+e.message}}
@@ -416,17 +392,16 @@ function runTests(){let out=[];let a=genMaze('2026-11-18'),b=genMaze('2026-11-18
   $('testEl').innerHTML=out.join('<br>');toast('🧪 Tests: '+(out.filter(x=>x.startsWith('✅')).length)+'/'+out.length+' passed');}
 function applyLang(){document.documentElement.lang=lang;document.documentElement.dir=lang=='ar'?'rtl':'ltr';$('lScore').textContent=tr('score');$('lTime').textContent=tr('time');$('lGems').textContent=tr('gems');$('lStreak').textContent=tr('streak');$('playBtn').textContent=tr('play');$('practiceBtn').textContent=tr('practice');$('mineBtn').textContent=tr('mine');$('howto').innerHTML='<b>'+tr('tutorial')+':</b> '+tr('howto');$('pauseBtn').textContent=S&&S.paused?tr('resume'):tr('pause');$('soundBtn').textContent=sound?tr('soundOn'):tr('soundOff');$('staminaLabel').textContent=tr('stamina');$('questTitle').textContent='🎯 '+tr('quests');$('achTitle').textContent='🏅 '+tr('ach');$('lbTitle').textContent='🏆 '+tr('lb');$('storeTitle').textContent='🛒 '+tr('store');$('testTitle').textContent='🧪 '+tr('tests');$('antiTitle').textContent='🔒 '+tr('anti');$('claimBtn').textContent=tr('claim');$('chestBtn').textContent=tr('openChest');$('chestEl').textContent='🎁 '+tr('chest');$('adBtn').textContent=tr('watchAd');$('buyPick').textContent=tr('buyPick');$('buyLantern').textContent=tr('buyLantern');$('shareBtn').textContent=tr('share');$('replayBtn').textContent=tr('replay');$('testBtn').textContent=tr('runTests');$('clearLbBtn').textContent=tr('clear');$('tournPill').textContent=tr('tourn');$('breakTitle').textContent='📊 '+tr('breakdown');if(S)renderHUD();}
 // Server code — exact verifier, copy-paste to server.js
-const SERVER_CODE = `// server.js — Maze Miner Race v10.0.0 — Production — SAME-ORIGIN SERVER-AUTHORITATIVE verifier
+const SERVER_CODE = `// server.js — Maze Miner Race v11.0.0 — Production — SAME-ORIGIN SERVER-AUTHORITATIVE verifier
 // Run: node server.js  (port 3001) — serves the game HTML at http://localhost:3001/ AND /api/*
-// NO dependencies, Node built-in only. Put server.js in SAME folder as maze_miner_race_v10.0.0_single.html
+// NO dependencies, Node built-in only. Put server.js in SAME folder as maze_miner_race_v11.0.0_single.html
 import http from 'node:http'; import crypto from 'node:crypto'; import fs from 'node:fs'; import path from 'node:path';
 const SECRET = process.env.SESSION_SECRET || 'CHANGE-ME-IN-PROD';
 const sessions=new Map(), leaderboard=[];
 function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
 function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
-function genMaze(seed){const rng=mulberry(hash(seed));const W=21,H=21,maze=Array.from({length:H},()=>Array(W).fill(1));let stack=[[1,1]];maze[1][1]=0;const dirs=[[2,0],[-2,0],[0,2],[0,-2]];while(stack.length){let [x,y]=stack[stack.length-1];let opts=[];for(let [dx,dy] of dirs){let nx=x+dx,ny=y+dy;if(nx>0&&ny>0&&nx<W-1&&ny<H-1&&maze[ny][nx]==1)opts.push([dx,dy,nx,ny]);}if(!opts.length){stack.pop();continue;}let [dx,dy,nx,ny]=opts[Math.floor(rng()*opts.length)];maze[y+dy/2][x+dx/2]=0;maze[ny][nx]=0;stack.push([nx,ny]);}maze[1][1]=0;maze[19][19]=0;maze[19][18]=0;maze[18][19]=0;const blocks={};for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(maze[y][x]==1){let r=rng();let kind=r<.35?'dirt':r<.65?'stone':r<.85?'iron':r<.94?'crystal':'gamble';blocks[x+','+y]={kind,hp:kind=='dirt'?1:kind=='stone'?2:kind=='iron'?3:kind=='crystal'?4:2,max:kind=='dirt'?1:kind=='stone'?2:kind=='iron'?3:kind=='crystal'?4:2};}const gems={};for(let i=0;i<14;i++){let x=1+Math.floor(rng()*19),y=1+Math.floor(rng()*19);if(maze[y][x]==0&&!(x==1&&y==1))gems[x+','+y]=true}const powers={};const plist=['pick','speed','lantern','shield','sonar','clock'];for(let i=0;i<6;i++){let x=1+Math.floor(rng()*19),y=1+Math.floor(rng()*19);if(maze[y][x]==0)powers[x+','+y]=plist[i%6]}const r2=mulberry(hash(seed+'|special'));Object.keys(blocks).forEach((k,i)=>{if(i%14==0)blocks[k].special='explosive';else if(i%17==0)blocks[k].special='ice';else if(i%19==0)blocks[k].special='lava';else if(i%23==0)blocks[k].special='locked';else if(i%29==0)blocks[k].special='hidden';});return{maze,blocks,gems,powers}}
 
-// ===== v10.0.0 SHARED CORE — CANONICAL DETERMINISTIC ENGINE =====
+// ===== v11.0.0 SHARED CORE — CANONICAL DETERMINISTIC ENGINE =====
 // This exact text appears VERBATIM in the client AND in SERVER_CODE below.
 // Client validateRunLocal() and server validateRun() both call simulateRun().
 // If you change one, you must change the other — they are the same string.
@@ -435,69 +410,12 @@ function genMaze(seed){const rng=mulberry(hash(seed));const W=21,H=21,maze=Array
 // rival only ends run early if it reaches finish first; server checks rival
 // cannot be faked by requiring actions to finish before rival's earliest finish tick.
 // Rival earliest finish is computed by BFS on the generated maze (see rivalEarliestTick).
-function simulateRun(seed,diff,mod,biome,actions,ticks,clientScore){
-  const g=genMaze(seed);
-  const rng=mulberry(hash(seed+'|gameplay|'+diff+'|'+mod));
-  let px=1,py=1,stamina=100,score=0,combo=0,timer=diff=='easy'?260:diff=='hard'?150:200,lastTick=0,power=null,powerUntilTick=-1,hasKey=false;
-  let blocks=JSON.parse(JSON.stringify(g.blocks)), gems={...g.gems}, powers={...g.powers};
-  const hp={}; for(let k in blocks) hp[k]=blocks[k].hp;
-  const traps={}; if(biome=='Ruins'){ let tr=mulberry(hash(seed+'|traps')); for(let i=0;i<5;i++){let x=2+Math.floor(tr()*17),y=2+Math.floor(tr()*17); if(g.maze[y][x]==0) traps[x+','+y]=true;} }
-  // Tick-by-tick timer/power/biome model: between actions, timer drains 1/tick, or 0 on even ticks if Speed active.
-  // We replay ticks from 0..lastTick, applying drain, biome stamina, power expiry.
-  function applyTick(t){
-    let drain=1; if(power=='speed' && t%2==0) drain=0;
-    timer-=drain;
-    if(biome=='Desert') stamina=Math.max(0,stamina-.5);
-    if(biome=='Ice') stamina=Math.min(100,stamina+.5);
-    if(biome=='Volcano'&&power!='shield') stamina=Math.max(0,stamina-.4);
-    if(power && t>powerUntilTick) power=null;
-    if(timer<=-60) return {ok:false,reason:'timer expired before finish at tick '+t};
-    return {ok:true};
-  }
-  for(let i=0;i<actions.length;i++){
-    const a=actions[i];
-    if(typeof a.tick!=='number'||a.tick<lastTick) return {ok:false,reason:'tick backwards at '+i};
-    if(a.tick>1000) return {ok:false,reason:'ticks too high'};
-    // advance ticks from lastTick to a.tick
-    for(let t=lastTick+1;t<=a.tick;t++){ let r=applyTick(t); if(!r.ok) return r; }
-    lastTick=a.tick;
-    if(a.t=='move'){
-      if(Math.abs(a.dx)>1||Math.abs(a.dy)>1||Math.abs(a.dx)+Math.abs(a.dy)!=1) return {ok:false,reason:'invalid move '+i};
-      let nx=px+a.dx, ny=py+a.dy; if(nx<0||ny<0||nx>20||ny>20) return {ok:false,reason:'oob '+i};
-      if(blocks[nx+','+ny]) return {ok:false,reason:'wall-through '+i+' — includes hidden blocks: hidden blocks are blocks, you cannot step through them'};
-      px=nx; py=ny; stamina=Math.min(100,stamina+(power=='speed'?1:.5));
-      if(biome=='Ice' && rng()<.18){ let sx=px+a.dx, sy=py+a.dy; if(sx>=0&&sy>=0&&sx<=20&&sy<=20&&!blocks[sx+','+sy]){px=sx;py=sy;} }
-      if(traps[px+','+py]) stamina=Math.max(0,stamina-12);
-      if(gems[px+','+py]){ delete gems[px+','+py]; let gain=biome=='Cavern'?30:15; if(mod=='Double Gems')gain*=2; score+=gain; }
-      if(powers[px+','+py]){ power=powers[px+','+py]; delete powers[px+','+py]; powerUntilTick=a.tick+15; if(power=='pick')score+=5; if(power=='clock')timer+=20; if(power=='lantern'){/* vision only, no score */} if(power=='sonar'){/* sonar only */} if(power=='shield'){/* shield only */} }
-    } else if(a.t=='mine'){
-      if(Math.abs(a.x-px)+Math.abs(a.y-py)!=1) return {ok:false,reason:'mine too far '+i};
-      let k=a.x+','+a.y; if(!blocks[k]) return {ok:false,reason:'mine empty '+i};
-      if(blocks[k].special=='locked'&&!hasKey) return {ok:false,reason:'locked without key '+i};
-      if(stamina<=0) return {ok:false,reason:'0 stamina '+i};
-      let cost={dirt:5,stone:8,iron:12,crystal:16,gamble:8}[blocks[k].kind]; if(power=='pick') cost=Math.ceil(cost/2);
-      stamina=Math.max(0,stamina-cost);
-      let dmg=power=='pick'?2:1; hp[k]-=dmg; combo++; if(combo>2) score+=combo;
-      if(hp[k]<=0){ let b=blocks[k]; delete blocks[k]; score+=20; stamina=Math.min(100,stamina+4);
-        if(b.special=='explosive'){ for(let [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){ let kk=(a.x+dx)+','+(a.y+dy); if(blocks[kk]){ hp[kk]--; if(hp[kk]<=0) delete blocks[kk]; } } }
-        if(b.special=='ice') timer+=5;
-        if(b.special=='lava'){ if(power!='shield') stamina=Math.max(0,stamina-15); }
-        if(b.kind=='crystal'&&rng()<.4) hasKey=true;
-        if(b.kind=='gamble'){ let r=rng(); if(r<.4)score+=50; else if(r<.7)timer-=10; else score+=10; }
-      }
-    } else return {ok:false,reason:'unknown action '+i};
-  }
-  if(px!==19||py!==19) return {ok:false,reason:'did not reach finish'};
-  if(typeof ticks!=='number'||ticks<10||ticks>1000) return {ok:false,reason:'elapsed out of range'};
-  let timeBonus=Math.max(0,(200-ticks))*2; let serverScore=score+timeBonus;
-  if(clientScore!==serverScore) return {ok:false,reason:'score mismatch client '+clientScore+' vs server '+serverScore,serverScore};
-  return {ok:true,serverScore};
-}
+
 
 function validateRun(sess,body){
   if(!sess) return{ok:false,reason:'no session'};
   if(body.seed!==sess.seed) return{ok:false,reason:'seed mismatch'};
-  if(body.version!=='9.0.0' && body.version!=='8.0.0') return{ok:false,reason:'version mismatch'};
+  if(body.version!=='11.0.0' && body.version!=='8.0.0') return{ok:false,reason:'version mismatch'};
   if(!Array.isArray(body.actions)||body.actions.length<5||body.actions.length>3000) return{ok:false,reason:'actions length'};
   const fp=crypto.createHash('sha256').update(JSON.stringify(body.actions)).digest('hex');
   if(leaderboard.some(r=>r.fingerprint===fp)) return{ok:false,reason:'duplicate replay'};
@@ -508,12 +426,12 @@ function validateRun(sess,body){
 const server=http.createServer((req,res)=>{
   // SAME-ORIGIN: serve the game HTML from this server, so /api/* is same origin — no proxy, no CORS hack
   if(req.method=='GET'&&(req.url=='/'||req.url=='/index.html')){
-    const candidates=['maze_miner_race_v10.0.0_single.html','maze_miner_race_v10.0.0_single.html','index.html'];
+    const candidates=['maze_miner_race_v11.0.0_single.html','maze_miner_race_v11.0.0_single.html','index.html'];
     for(let c of candidates){ try{ let p=path.join(process.cwd(),c); if(fs.existsSync(p)){ res.setHeader('Content-Type','text/html; charset=utf-8'); return res.end(fs.readFileSync(p)); } }catch(e){} }
-    res.statusCode=404; return res.end('Put maze_miner_race_v10.0.0_single.html in same folder as server.js');
+    res.statusCode=404; return res.end('Put maze_miner_race_v11.0.0_single.html in same folder as server.js');
   }
   res.setHeader('Access-Control-Allow-Origin','*');res.setHeader('Access-Control-Allow-Headers','Content-Type');res.setHeader('Content-Type','application/json');if(req.method=='OPTIONS'){res.statusCode=204;return res.end();}let body='';req.on('data',c=>{body+=c});req.on('end',()=>{try{const url=new URL(req.url,'http://localhost');if(url.pathname=='/api/session'&&req.method=='POST'){const seed=new Date().toISOString().slice(0,10);const id=crypto.randomBytes(16).toString('hex');const token=crypto.createHmac('sha256',SECRET).update(id+seed).digest('hex');sessions.set(id,{seed,created:Date.now()});return res.end(JSON.stringify({sessionId:id,seed,token}));}if(url.pathname=='/api/run'&&req.method=='POST'){const b=JSON.parse(body||'{}');const sess=sessions.get(b.sessionId);const expected=crypto.createHmac('sha256',SECRET).update(b.sessionId+(sess?.seed||'')).digest('hex');if(b.token!==expected)return res.end(JSON.stringify({ok:false,reason:'bad token'}));sess.runs=(sess.runs||0)+1;if(sess.runs>20)return res.end(JSON.stringify({ok:false,reason:'rate limited'}));const v=validateRun(sess,b);if(!v.ok)return res.end(JSON.stringify(v));const e={user:'player',seed:sess.seed,serverScore:v.serverScore,time:b.ticks,difficulty:b.difficulty,fingerprint:v.fingerprint,at:Date.now()};leaderboard.push(e);leaderboard.sort((a,b)=>b.serverScore-a.serverScore);return res.end(JSON.stringify({ok:true,verified:true,serverScore:v.serverScore,rank:leaderboard.indexOf(e)+1,fingerprint:v.fingerprint}));}if(url.pathname=='/api/leaderboard'){return res.end(JSON.stringify(leaderboard.slice(0,100)));}if(url.pathname=='/api/health'){return res.end(JSON.stringify({ok:true,uptime:process.uptime(),leaderboard:leaderboard.length,sessions:sessions.size}));}res.statusCode=404;return res.end(JSON.stringify({error:'not found'}));}catch(e){res.statusCode=400;return res.end(JSON.stringify({ok:false,reason:e.message}));}})});
-server.listen(process.env.PORT||3001,()=>console.log('MMR v10.0.0 server on :'+(process.env.PORT||3001)+' — open http://localhost:3001/'));
+server.listen(process.env.PORT||3001,()=>console.log('MMR v11.0.0 server on :'+(process.env.PORT||3001)+' — open http://localhost:3001/'));
 `;
 $('showServerBtn').onclick=()=>{let p=$('serverPanel');p.style.display=p.style.display=='none'?'block':'none';$('serverCode').textContent=SERVER_CODE;};
 $('copyServerBtn').onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText(SERVER_CODE);toast('Server code copied — paste into server.js, run node server.js');};
@@ -530,7 +448,7 @@ $('chestBtn').onclick=()=>{let today=todaySeed();if(save.chestDay==today){toast(
 $('adBtn').onclick=()=>{toast('▶ Simulated ad… 3s');$('adBtn').disabled=true;setTimeout(()=>{save.gems+=30;persist();toast('✅ Ad +30 gems');$('adBtn').disabled=false;renderStore();renderHUD();},3000)};
 $('buyPick').onclick=()=>{if(save.gems<40){toast('Need 40 gems.');return;}save.gems-=40;save.strongPick=true;persist();toast('⛏️ Strong Pick owned!');renderStore();};
 $('buyLantern').onclick=()=>{if(save.gems<30){toast('Need 30 gems.');return;}save.gems-=30;save.lantern=true;persist();toast('🔦 Lantern owned!');renderStore();};
-$('shareBtn').onclick=()=>{let txt='Maze Miner Race v10.0.0 — Production — Score '+(S?S.score:0)+' • Seed '+(S?S.seed:'—')+' • Verified: '+(S&&S.state=='WON'?'✅':'—');if(navigator.share)navigator.share({text:txt}).catch(()=>{});else{navigator.clipboard&&navigator.clipboard.writeText(txt);toast('Copied: '+txt)}};
+$('shareBtn').onclick=()=>{let txt='Maze Miner Race v11.0.0 — Production — Score '+(S?S.score:0)+' • Seed '+(S?S.seed:'—')+' • Verified: '+(S&&S.state=='WON'?'✅':'—');if(navigator.share)navigator.share({text:txt}).catch(()=>{});else{navigator.clipboard&&navigator.clipboard.writeText(txt);toast('Copied: '+txt)}};
 $('replayBtn').onclick=()=>{toast('↩ Ghost shows your last trail. Tap PLAY to race it.');};
 $('copyBtn').onclick=()=>{toast(tr('copyHint'));};
 $('clearLbBtn').onclick=()=>{save.lb=[];persist();renderLB();toast('Cleared')};

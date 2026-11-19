@@ -1,16 +1,15 @@
-# Maze Miner Race v10.0.0
-Deterministic maze race. Server-authoritative replay verification.
+# Maze Miner Race v11.0.0
+
+Deterministic maze race with canonical browser/server simulation and server-authoritative replay verification.
 
 ## Run
+
 ```bash
-cp .env.example .env  # set SESSION_SECRET
 npm ci
-npm start  # http://localhost:3001/
-```
-## Verify
-Play → Win → ✅ SERVER VERIFIED. Server off → ⚠️ LOCAL ONLY.
-## Test
-```bash
+npm run typecheck
 npm test
-npx playwright test
+npm run build
+SESSION_SECRET=$(openssl rand -hex 32) npm start
 ```
+
+Open `http://localhost:3001/`. The browser imports the canonical modules under `packages/simulation/`; verified runs display `SERVER VERIFIED`.

@@ -1,9 +1,10 @@
 # Changelog
+
+## 11.0.0 — Production hardening
+- Browser imports canonical `packages/simulation/` modules served by the same-origin server.
+- Transactional leaderboard persistence with lock, fsync, atomic rename, and unique replay fingerprints.
+- Request IDs, session cleanup, metrics, environment validation, and security headers.
+- TypeScript `checkJs` typecheck gate, Vite build, and full Playwright coverage.
+
 ## 10.0.0 — Production
-- Shared simulation package (packages/simulation) — no duplicated genMaze/simulateRun
-- Hardened server: timingSafeEqual, session expiry, body limit, CORS allowlist, rate limit, security headers, graceful shutdown, JSON logs
-- Durable leaderboard: data/leaderboard.json with fingerprint unique constraint
-- TypeScript types for replay protocol
-- Accessibility: focus-visible, Escape closes dialogs, aria-live, reduced-motion
-- Version consistency: 10.0.0 everywhere
-- CI: node tests + Playwright e2e (live server, verified run, tamper cases, mobile, a11y)
+- Shared simulation package and hardened replay verifier.

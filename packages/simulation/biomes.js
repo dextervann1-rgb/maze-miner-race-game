@@ -1,4 +1,4 @@
-// packages/simulation/biomes.js — CANONICAL biome rules. Single source of truth. v10.0.0
+// packages/simulation/biomes.js — CANONICAL biome rules. Single source of truth. v11.0.0
 export const BIOMES = {
   Desert:{vision:-1, staminaPerTick:-0.5, desc:'Desert — vision -1, stamina drains'},
   Ice:{vision:0, staminaPerTick:0.5, slideChance:0.18, desc:'Ice — slippery slide, stamina regens'},

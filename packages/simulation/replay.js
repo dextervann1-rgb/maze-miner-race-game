@@ -1,4 +1,4 @@
-// packages/simulation/replay.js — CANONICAL deterministic replay. v10.0.0
+// packages/simulation/replay.js — CANONICAL deterministic replay. v11.0.0
 // Browser AND Node import this exact file. Client validateRunLocal() and server validateRun() both call simulateRun() here.
 // Covers: timer + Speed half-speed, powerups, gamble, crystal key, explosive/ice/lava/locked, hidden, traps, Ice slide, Cavern gems, stamina, combo, time bonus.
 import {hash,mulberry,genMaze} from './maze.js';

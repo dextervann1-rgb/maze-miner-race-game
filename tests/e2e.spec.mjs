@@ -40,7 +40,7 @@ test('live server verifies a legal replay', async ({ request }) => {
   const actions = openPath(session.seed, 1 + (Date.now() % 200));
   const simulation = simulateRun(session.seed, 'normal', 'Normal', 'Desert', actions, 60, 0);
   const response = await request.post('http://localhost:3001/api/run', { data: {
-    sessionId: session.sessionId, token: session.token, seed: session.seed, version: '10.0.0',
+    sessionId: session.sessionId, token: session.token, seed: session.seed, version: '11.0.0',
     difficulty: 'normal', modifier: 'Normal', biome: 'Desert', actions, ticks: 60,
     clientScore: simulation.serverScore,
   } });
@@ -66,7 +66,7 @@ test('escape closes tutorial', async ({ page }) => {
 
 test('tamper: bad HMAC rejected', async ({ request }) => {
   const response = await request.post('http://localhost:3001/api/run', { data: {
-    sessionId: 'fake', token: 'bad', seed: '2026-11-18', version: '10.0.0', difficulty: 'normal',
+    sessionId: 'fake', token: 'bad', seed: '2026-11-18', version: '11.0.0', difficulty: 'normal',
     modifier: 'Normal', biome: 'Desert', actions: [], ticks: 10, clientScore: 999,
   } });
   expect((await response.json()).ok).toBe(false);
